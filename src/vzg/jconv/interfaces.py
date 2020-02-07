@@ -18,6 +18,7 @@ __docformat__ = 'plaintext'
 class IArticle(Interface):
 
     journal = Attribute("Journal")
+    json = Attribute("Article JSON")
     lang_code = Attribute("Language Code")
     primary_id = Attribute("Primäre ID des Datensatzes in der Datenquelle")
     title = Attribute("Articel Title")

@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
-"""API
+"""Beschreibung
+
 ##############################################################################
 #
 # Copyright (c) 2020 Verbundzentrale des GBV.
@@ -10,8 +11,6 @@
 
 # Imports
 
+
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = 'plaintext'
-
-
-NAMESPACES = {'xml': 'http://www.w3.org/XML/1998/namespace'}
