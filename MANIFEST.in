@@ -1,5 +1,6 @@
 include *.txt
 include *.md
+include *.json
 recursive-include docs *
 recursive-include etc *
 recursive-include src *
