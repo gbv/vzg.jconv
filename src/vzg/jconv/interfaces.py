@@ -16,9 +16,19 @@ __docformat__ = 'plaintext'
 
 
 class IArticle(Interface):
+    """VZG Article"""
 
     journal = Attribute("Journal")
-    json = Attribute("Article JSON")
+    json = Attribute("Article as JSON object")
     lang_code = Attribute("Language Code")
     primary_id = Attribute("Primäre ID des Datensatzes in der Datenquelle")
-    title = Attribute("Articel Title")
+    title = Attribute("Article Title")
+
+
+class IConverter(Interface):
+    """Converter"""
+
+    articles = Attribute("List of IArticle objects")
+
+    def run(self):
+        """Start the conversion"""

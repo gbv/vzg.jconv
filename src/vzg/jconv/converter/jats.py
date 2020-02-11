@@ -12,19 +12,22 @@
 # Imports
 from zope.interface import implementer
 from vzg.jconv.interfaces import IArticle
+from vzg.jconv.interfaces import IConverter
 from vzg.jconv.gapi import NAMESPACES
 from vzg.jconv.langcode import ISO_639
 from lxml import etree
 import logging
 import json
+from pathlib import Path
+from vzg.jconv.gapi import JATS_PUBTYPE
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = 'plaintext'
 
 
 @implementer(IArticle)
-class Jats:
-    """Convert a JATS XML File to JSON
+class JatsArticle:
+    """Convert a JATS XML File to JSON Files
 
     Parameters
     ----------
@@ -52,16 +55,10 @@ class Jats:
     [4, 5, 6]
     """
 
-    def __init__(self, jatspath, iso639=None):
-        self.jatspath = jatspath
-
-        if not self.jatspath.is_file():
-            raise OSError
-
-        with open(self.jatspath, 'rb') as fh:
-            self.dom = etree.parse(fh)
-
+    def __init__(self, dom, pubtype, iso639=None):
+        self.dom = dom
         self.iso639 = ISO_639() if isinstance(iso639, type(None)) else iso639
+        self.pubtype = pubtype
 
     @property
     def lang_code(self):
@@ -92,8 +89,11 @@ class Jats:
         except IndexError:
             logger.error("no journal title")
 
-        expression = """//article-meta/pub-date/year/text()"""
+        # epub
+        expression = f"""//article-meta/pub-date[@date-type="{self.pubtype}"]/year/text()"""
+        print(expression)
         node = self.xpath(expression)
+        print(node)
         try:
             pdict['year'] = node[0]
         except IndexError:
@@ -142,3 +142,50 @@ class Jats:
 
     def xpath(self, expression):
         return self.dom.xpath(expression, namespaces=NAMESPACES)
+
+
+@implementer(IConverter)
+class JatsConverter:
+    """Convert a JATS XML File to JSON Objects
+
+    Parameters
+    ----------
+    jatspath : pathlib.Path
+        Path object with the JATS XML file
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    OSError
+        If it is not a file
+    lxml.etree.XMLSyntaxError
+        Invalid XML
+
+    Examples
+    --------
+
+    >>> conv = JatsConverter(xpath)
+    >>> conv.run()
+    >>> conv.articles
+    []
+    """
+
+    def __init__(self, jatspath, iso639=None):
+        self.jatspath = jatspath
+        self.articles = []
+
+        if not self.jatspath.is_file():
+            raise OSError
+
+        with open(self.jatspath, 'rb') as fh:
+            self.dom = etree.parse(fh)
+
+        self.iso639 = ISO_639() if isinstance(iso639, type(None)) else iso639
+
+    def run(self):
+        """"""
+        self.articles.append(JatsArticle(
+            self.dom, JATS_PUBTYPE.epub.name, self.iso639))

@@ -13,9 +13,11 @@
 import sys
 import unittest
 import logging
-from vzg.jconv.converter.jats import Jats
+from vzg.jconv.converter.jats import JatsArticle
+from vzg.jconv.gapi import JATS_PUBTYPE
 from pathlib import Path
 import json
+from lxml import etree
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = 'plaintext'
@@ -37,31 +39,32 @@ class TestCase(unittest.TestCase):
         with open(self.jpath) as fh:
             self.testdata = json.load(fh)
 
+        with open(self.fpath, 'rb') as fh:
+            self.dom = etree.parse(fh)
+
     def tearDown(self):
         unittest.TestCase.tearDown(self)
 
     def test01(self):
         """title"""
-        jobj = Jats(self.fpath)
+        jobj = JatsArticle(self.dom, JATS_PUBTYPE.epub.name)
         self.assertEqual(jobj.title, self.testdata['title'], "title")
 
     def test02(self):
         """lang_code"""
-        jobj = Jats(self.fpath)
+        jobj = JatsArticle(self.dom, JATS_PUBTYPE.epub.name)
         self.assertEqual(
             jobj.lang_code, self.testdata['lang_code'], "lang_code")
 
-        logger.info(jobj.json)
-
     def test03(self):
         """primary_id"""
-        jobj = Jats(self.fpath)
+        jobj = JatsArticle(self.dom, JATS_PUBTYPE.epub.name)
         self.assertEqual(
             jobj.primary_id, self.testdata['primary_id'], "primary_id")
 
     def test04(self):
         """journal"""
-        jobj = Jats(self.fpath)
+        jobj = JatsArticle(self.dom, JATS_PUBTYPE.epub.name)
         self.assertEqual(
             jobj.journal, self.testdata['journal'], "journal")
 
