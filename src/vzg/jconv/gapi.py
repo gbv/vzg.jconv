@@ -18,8 +18,8 @@ __docformat__ = 'plaintext'
 NAMESPACES = {'xml': 'http://www.w3.org/XML/1998/namespace'}
 
 
-class JATS_PUBTYPE(Enum):
+class JATS_SPRINGER_PUBTYPE(Enum):
     """"""
 
-    epub = auto()
-    ppub = auto()
+    electronic = "epub"
+    print = "ppub"

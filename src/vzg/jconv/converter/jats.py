@@ -18,41 +18,35 @@ from vzg.jconv.langcode import ISO_639
 from lxml import etree
 import logging
 import json
-from pathlib import Path
-from vzg.jconv.gapi import JATS_PUBTYPE
+from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = 'plaintext'
 
+JATS_XPATHS = {}
+JATS_XPATHS["lang_code"] = "//article-meta/title-group/article-title/@xml:lang"
+JATS_XPATHS["journal-title"] = "//journal-meta/journal-title-group/journal-title/text()"
+JATS_XPATHS["pub-date"] = """//article-meta/pub-date[@date-type="{pubtype}"]"""
+JATS_XPATHS["pub-date-year"] = JATS_XPATHS["pub-date"] + """/year/text()"""
+JATS_XPATHS["primary_id"] = """//article-meta/article-id[@pub-id-type="publisher-id"]/text()"""
+JATS_XPATHS["article-title"] = "//article-meta/title-group/article-title/text()"
+
 
 @implementer(IArticle)
 class JatsArticle:
-    """Convert a JATS XML File to JSON Files
+    """Convert a JATS XML File to a JSON object
 
     Parameters
     ----------
-    jatspath : pathlib.Path
-        Path object with the JATS XML file
+    dom : etree._ElementTree
+        ElementTree
+    pubtype : string
+
+    iso639 : vzg.jconv.langcode.ISO_639
 
     Returns
     -------
     None
-
-    Raises
-    ------
-    OSError
-        If it is not a file
-    lxml.etree.XMLSyntaxError
-        Invalid XML
-
-    Examples
-    --------
-    These are written in doctest format, and should illustrate how to
-    use the function.
-
-    >>> a=[1,2,3]
-    >>> print [x + 3 for x in a]
-    [4, 5, 6]
     """
 
     def __init__(self, dom, pubtype, iso639=None):
@@ -64,8 +58,7 @@ class JatsArticle:
     def lang_code(self):
         """Article lang_code"""
         logger = logging.getLogger(__name__)
-        attributes = self.xpath(
-            "//article-meta/title-group/article-title/@xml:lang")
+        attributes = self.xpath(JATS_XPATHS['lang_code'])
         try:
             lang_code = self.iso639.i1toi2[attributes[0]]
         except IndexError:
@@ -82,18 +75,16 @@ class JatsArticle:
 
         pdict = {"title": "", "year": ""}
 
-        expression = """//journal-meta/journal-title-group/journal-title/text()"""
+        expression = JATS_XPATHS["journal-title"]
         node = self.xpath(expression)
         try:
             pdict['title'] = node[0]
         except IndexError:
             logger.error("no journal title")
 
-        # epub
-        expression = f"""//article-meta/pub-date[@date-type="{self.pubtype}"]/year/text()"""
-        print(expression)
+        expression = JATS_XPATHS["pub-date-year"].format(pubtype=self.pubtype)
         node = self.xpath(expression)
-        print(node)
+
         try:
             pdict['year'] = node[0]
         except IndexError:
@@ -114,7 +105,7 @@ class JatsArticle:
     def primary_id(self):
         """Article primary_id"""
         logger = logging.getLogger(__name__)
-        expression = """//article-meta/article-id[@pub-id-type="publisher-id"]/text()"""
+        expression = JATS_XPATHS["primary_id"]
         node = self.xpath(expression)
 
         pdict = {"type": "SPRINGER", "id": ""}
@@ -130,7 +121,7 @@ class JatsArticle:
         """Article title"""
         logger = logging.getLogger(__name__)
 
-        expression = "//article-meta/title-group/article-title/text()"
+        expression = JATS_XPATHS["article-title"]
         node = self.xpath(expression)
 
         try:
@@ -185,7 +176,28 @@ class JatsConverter:
 
         self.iso639 = ISO_639() if isinstance(iso639, type(None)) else iso639
 
+    @property
+    def pubtypes(self):
+        """Try to guess the formats of publication.
+
+        Depends on the publisher.
+
+        Springer sets the date-type attribute to certain values
+        """
+        pubtypes = []
+
+        for entry in JATS_SPRINGER_PUBTYPE:
+            expression = JATS_XPATHS["pub-date"].format(pubtype=entry.value)
+            nodes = self.dom.xpath(expression, namespaces=NAMESPACES)
+
+            if len(nodes) > 0:
+                pubtypes.append(entry)
+
+        return pubtypes
+
     def run(self):
         """"""
-        self.articles.append(JatsArticle(
-            self.dom, JATS_PUBTYPE.epub.name, self.iso639))
+        for pubtype in self.pubtypes:
+            self.articles.append(JatsArticle(self.dom,
+                                             pubtype.value,
+                                             self.iso639))

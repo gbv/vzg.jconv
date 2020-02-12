@@ -13,10 +13,9 @@
 import sys
 import unittest
 import logging
-from vzg.jconv.converter.jats import JatsArticle
-from vzg.jconv.gapi import JATS_PUBTYPE
 from pathlib import Path
-import json
+from vzg.jconv.converter.jats import JatsConverter
+from vzg.jconv.converter.jats import JatsArticle
 from lxml import etree
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
@@ -34,39 +33,36 @@ class TestCase(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
         self.fpath = Path("article.xml")
-        self.jpath = Path("article.json")
-
-        with open(self.jpath) as fh:
-            self.testdata = json.load(fh)
-
-        with open(self.fpath, 'rb') as fh:
-            self.dom = etree.parse(fh)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
 
     def test01(self):
-        """title"""
-        jobj = JatsArticle(self.dom, JATS_PUBTYPE.epub.name)
-        self.assertEqual(jobj.title, self.testdata['title'], "title")
+        """Wrong path"""
+        tpath = Path("sddsdsds.xml")
+
+        with self.assertRaises(OSError):
+            JatsConverter(tpath)
 
     def test02(self):
-        """lang_code"""
-        jobj = JatsArticle(self.dom, JATS_PUBTYPE.epub.name)
-        self.assertEqual(
-            jobj.lang_code, self.testdata['lang_code'], "lang_code")
+        """DOM"""
+        with open(self.fpath, 'rb') as fh:
+            dom = etree.parse(fh)
+
+        self.assertIsInstance(dom, etree._ElementTree, "DOM")
 
     def test03(self):
-        """primary_id"""
-        jobj = JatsArticle(self.dom, JATS_PUBTYPE.epub.name)
-        self.assertEqual(
-            jobj.primary_id, self.testdata['primary_id'], "primary_id")
+        """run"""
+        jconv = JatsConverter(self.fpath)
 
-    def test04(self):
-        """journal"""
-        jobj = JatsArticle(self.dom, JATS_PUBTYPE.epub.name)
-        self.assertEqual(
-            jobj.journal, self.testdata['journal'], "journal")
+        self.assertTrue(len(jconv.articles) == 0, "articles")
+
+        jconv.run()
+
+        self.assertTrue(len(jconv.articles) == 2, "articles")
+
+        for article in jconv.articles:
+            self.assertIsInstance(article, JatsArticle, "article")
 
 
 if __name__ == '__main__':
