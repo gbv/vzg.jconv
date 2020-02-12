@@ -14,11 +14,13 @@ from zope.interface import implementer
 from vzg.jconv.interfaces import IArticle
 from vzg.jconv.interfaces import IConverter
 from vzg.jconv.gapi import NAMESPACES
+from vzg.jconv.gapi import JSON_SCHEMA
 from vzg.jconv.langcode import ISO_639
 from lxml import etree
 import logging
 import json
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
+import jsonschema
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = 'plaintext'
@@ -66,7 +68,7 @@ class JatsArticle:
         except KeyError:
             logger.error("no lang_code")
 
-        return lang_code
+        return [lang_code]
 
     @property
     def journal(self):
@@ -93,13 +95,19 @@ class JatsArticle:
         return pdict
 
     @property
-    def json(self):
+    def jdict(self):
         """"""
         jdict = {"lang_code": self.lang_code,
                  "journal": self.journal,
                  "primary_id": self.primary_id,
                  "title": self.title}
-        return json.dumps(jdict)
+
+        return jdict
+
+    @property
+    def json(self):
+        """"""
+        return json.dumps(self.jdict)
 
     @property
     def primary_id(self):
@@ -143,7 +151,10 @@ class JatsConverter:
     ----------
     jatspath : pathlib.Path
         Path object with the JATS XML file
+    iso639 : vzg.jconv.langcode.ISO_639
 
+    validate : bool
+        Validate each IArticle
     Returns
     -------
     None
@@ -164,7 +175,7 @@ class JatsConverter:
     []
     """
 
-    def __init__(self, jatspath, iso639=None):
+    def __init__(self, jatspath, iso639=None, validate=False):
         self.jatspath = jatspath
         self.articles = []
 
@@ -175,6 +186,8 @@ class JatsConverter:
             self.dom = etree.parse(fh)
 
         self.iso639 = ISO_639() if isinstance(iso639, type(None)) else iso639
+
+        self.validate = validate
 
     @property
     def pubtypes(self):
@@ -197,7 +210,21 @@ class JatsConverter:
 
     def run(self):
         """"""
+        logger = logging.getLogger(__name__)
+
         for pubtype in self.pubtypes:
-            self.articles.append(JatsArticle(self.dom,
-                                             pubtype.value,
-                                             self.iso639))
+            article = JatsArticle(self.dom,
+                                  pubtype.value,
+                                  self.iso639)
+
+            if self.validate:
+                try:
+                    jsonschema.validate(instance=article.jdict,
+                                        schema=JSON_SCHEMA)
+                    self.articles.append(article)
+                except jsonschema.ValidationError as Exc:
+                    logger.error(Exc, exc_info=False)
+
+                continue
+
+            self.articles.append(article)

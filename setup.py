@@ -46,6 +46,8 @@ setup(
     package_dir={'': 'src'},
     namespace_packages=['vzg'],
     install_requires=[
+        'jsonschema',
+        'lxml',
         'setuptools',
         'zope.interface'
     ],

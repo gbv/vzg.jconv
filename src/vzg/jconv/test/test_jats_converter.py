@@ -64,6 +64,19 @@ class TestCase(unittest.TestCase):
         for article in jconv.articles:
             self.assertIsInstance(article, JatsArticle, "article")
 
+    def test04(self):
+        """validate"""
+        jconv = JatsConverter(self.fpath, validate=True)
+
+        self.assertTrue(len(jconv.articles) == 0, "articles")
+
+        jconv.run()
+
+        self.assertTrue(len(jconv.articles) == 2, "articles")
+
+        for article in jconv.articles:
+            self.assertIsInstance(article, JatsArticle, "article")
+
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
