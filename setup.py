@@ -53,4 +53,7 @@ setup(
     ],
     zip_safe=False,
     python_requires=">=3.6",
+    entry_points={'console_scripts': [
+        'simple-conv = vzg.jconv.tools.simple_conv:run'
+    ]},
 )
