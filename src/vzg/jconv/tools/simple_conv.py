@@ -48,7 +48,6 @@ def jats(options):
 
         relname = dir_name.replace(jpath.as_posix(), '')
         out_newpath = (opath / relname[1:]).resolve()
-        out_newpath.mkdir(0o755, parents=True, exist_ok=True)
 
         for fname in file_list:
             logger.info(f'\t{fname}')
@@ -62,12 +61,14 @@ def jats(options):
             msg = f"\t{anum} article(s)"
             logger.info(msg)
 
-            for article in jconv.articles:
-                aname = f"{jatspath.stem}_{article.pubtype}.json"
-                apath = out_newpath / aname
+            if options.dry_run is False:
+                out_newpath.mkdir(0o755, parents=True, exist_ok=True)
+                for article in jconv.articles:
+                    aname = f"{jatspath.stem}_{article.pubtype}.json"
+                    apath = out_newpath / aname
 
-                with open(apath, "wt") as fh:
-                    fh.write(article.json)
+                    with open(apath, "wt") as fh:
+                        fh.write(article.json)
 
 
 def run():
@@ -107,6 +108,12 @@ def run():
                              type=str,
                              nargs=1,
                              help='Directory of JATS files')
+
+    parser_jats.add_argument("--validate",
+                             dest='validate',
+                             action='store_true',
+                             default=False,
+                             help='JSON Schema Validation')
 
     parser_jats.set_defaults(func=jats)
 
