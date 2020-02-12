@@ -54,7 +54,7 @@ def jats(options):
 
             jatspath = Path(dir_name).absolute() / fname
 
-            jconv = JatsConverter(jatspath, validate=False)
+            jconv = JatsConverter(jatspath, validate=options.validate)
             jconv.run()
 
             anum = len(jconv.articles)
