@@ -43,6 +43,7 @@ JATS_XPATHS["journal-end_page"] = """//article-meta/lpage/text()"""
 JATS_XPATHS["publisher-name"] = """//journal-meta/publisher/publisher-name/text()"""
 JATS_XPATHS["publisher-place"] = """//journal-meta/publisher/publisher-loc/text()"""
 JATS_XPATHS["article-persons"] = """//article-meta/contrib-group/contrib"""
+JATS_XPATHS["article-copyright"] = """//article-meta/permissions/copyright-statement/text()"""
 JATS_XPATHS["affiliation"] = """//article-meta/contrib-group/aff[@id="{rid}"]"""
 
 
@@ -67,6 +68,19 @@ class JatsArticle:
         self.dom = dom
         self.iso639 = ISO_639() if isinstance(iso639, type(None)) else iso639
         self.pubtype = pubtype
+
+    @property
+    def copyright(self):
+        """Article copyright"""
+        logger = logging.getLogger(__name__)
+        nodes = self.xpath(JATS_XPATHS['article-copyright'])
+
+        try:
+            copyright = nodes[0]
+        except IndexError:
+            logger.error("no copyright")
+
+        return copyright
 
     @property
     def lang_code(self):
@@ -158,7 +172,8 @@ class JatsArticle:
     @property
     def jdict(self):
         """"""
-        jdict = {"lang_code": self.lang_code,
+        jdict = {"copyright": self.copyright,
+                 "lang_code": self.lang_code,
                  "journal": self.journal,
                  "persons": self.persons,
                  "primary_id": self.primary_id,
