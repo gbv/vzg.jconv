@@ -31,7 +31,13 @@ JATS_XPATHS["journal-title"] = "//journal-meta/journal-title-group/journal-title
 JATS_XPATHS["pub-date"] = """//article-meta/pub-date[@date-type="{pubtype}"]"""
 JATS_XPATHS["pub-date-year"] = JATS_XPATHS["pub-date"] + """/year/text()"""
 JATS_XPATHS["primary_id"] = """//article-meta/article-id[@pub-id-type="publisher-id"]/text()"""
+JATS_XPATHS["other_ids_doi"] = """//article-meta/article-id[@pub-id-type="doi"]/text()"""
 JATS_XPATHS["article-title"] = "//article-meta/title-group/article-title/text()"
+JATS_XPATHS["journal-id"] = """//journal-meta/journal-id[@journal-id-type="{journaltype}"]/text()"""
+JATS_XPATHS["journal-issn"] = """//journal-meta/issn[@pub-type="{pubtype}"]/text()"""
+JATS_XPATHS["publisher-name"] = """//journal-meta/publisher/publisher-name/text()"""
+JATS_XPATHS["publisher-place"] = """//journal-meta/publisher/publisher-loc/text()"""
+JATS_XPATHS["article-persons"] = """//article-meta/contrib-group/contrib[@contrib-type="author"]"""
 
 
 @implementer(IArticle)
@@ -75,7 +81,13 @@ class JatsArticle:
         """Article journal"""
         logger = logging.getLogger(__name__)
 
-        pdict = {"title": "", "year": ""}
+        pdict = {"title": "",
+                 "year": "",
+                 "journal_ids": []}
+
+        jids = {'springer': JATS_XPATHS["journal-id"].format(journaltype="publisher-id"),
+                'doi': JATS_XPATHS["journal-id"].format(journaltype="doi"),
+                self.pubtype: JATS_XPATHS["journal-issn"].format(pubtype=self.pubtype)}
 
         expression = JATS_XPATHS["journal-title"]
         node = self.xpath(expression)
@@ -92,6 +104,36 @@ class JatsArticle:
         except IndexError:
             logger.error("no journal year")
 
+        for jtype, expression in jids.items():
+            node = self.xpath(expression)
+
+            if len(node) == 0:
+                msg = f"no {jtype} journal_id"
+                logger.error(msg)
+                continue
+
+            jid = {'type': jtype, 'id': node[0]}
+            pdict["journal_ids"].append(jid)
+
+        publisher = {}
+
+        expression = JATS_XPATHS["publisher-name"]
+        node = self.xpath(expression)
+        try:
+            publisher['name'] = node[0]
+        except IndexError:
+            logger.error("no publisher name")
+
+        expression = JATS_XPATHS["publisher-place"]
+        node = self.xpath(expression)
+        try:
+            publisher['place'] = node[0]
+        except IndexError:
+            logger.error("no publisher place")
+
+        if len(publisher) > 0:
+            pdict["publisher"] = publisher
+
         return pdict
 
     @property
@@ -100,6 +142,7 @@ class JatsArticle:
         jdict = {"lang_code": self.lang_code,
                  "journal": self.journal,
                  "primary_id": self.primary_id,
+                 "other_ids": self.other_ids,
                  "title": self.title}
 
         return jdict
@@ -108,6 +151,30 @@ class JatsArticle:
     def json(self):
         """"""
         return json.dumps(self.jdict)
+
+    @property
+    def other_ids(self):
+        """Article other_ids"""
+        logger = logging.getLogger(__name__)
+        expression = JATS_XPATHS["other_ids_doi"]
+        node = self.xpath(expression)
+
+        pdict = {"type": "doi", "id": ""}
+        try:
+            pdict['id'] = node[0]
+        except IndexError:
+            logger.error("no other_id (doi")
+
+        return [pdict]
+
+#     @property
+#     def persons(self):
+#         """Article persons"""
+#         logger = logging.getLogger(__name__)
+#         expression = JATS_XPATHS["article-persons"]
+#         node = self.xpath(expression)
+#
+#         print(node)
 
     @property
     def primary_id(self):
@@ -120,7 +187,7 @@ class JatsArticle:
         try:
             pdict['id'] = node[0]
         except IndexError:
-            logger.error("no title")
+            logger.error("no primary_id")
 
         return pdict
 
