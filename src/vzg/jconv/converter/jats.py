@@ -44,7 +44,8 @@ JATS_XPATHS["publisher-name"] = """//journal-meta/publisher/publisher-name/text(
 JATS_XPATHS["publisher-place"] = """//journal-meta/publisher/publisher-loc/text()"""
 JATS_XPATHS["article-persons"] = """//article-meta/contrib-group/contrib"""
 JATS_XPATHS["article-copyright"] = """//article-meta/permissions/copyright-statement/text()"""
-JATS_XPATHS["article-license"] = """//article-meta/permissions/license[contains(@xlink:href, 'creativecommons.org')]"""
+JATS_XPATHS["article-license-type"] = """//article-meta/permissions/license/@license-type"""
+JATS_XPATHS["article-oa-license"] = """//article-meta/permissions/license[contains(@xlink:href, 'creativecommons.org')]"""
 JATS_XPATHS["affiliation"] = """//article-meta/contrib-group/aff[@id="{rid}"]"""
 JATS_XPATHS["abstracts-lang_code"] = "//article-meta/abstract/@xml:lang"
 JATS_XPATHS["abstracts-sec"] = "//article-meta/abstract/sec"
@@ -93,6 +94,7 @@ class JatsArticle:
 
         for secnode in sections:
             paras = [para.text for para in secnode.xpath("p")]
+            paras = [para for para in paras if isinstance(para, str)]
             abstract["text"] = "\n\n".join(paras)
 
         if "text" in abstract:
@@ -364,16 +366,27 @@ class JatsArticle:
         """Article URLs"""
         logger = logging.getLogger(__name__)
 
-        expression = JATS_XPATHS["article-license"]
+        udict = {}
+
+        expression = JATS_XPATHS["other_ids_doi"]
 
         try:
-            node = self.xpath(expression)[0]
+            doi = self.xpath(expression)[0]
         except IndexError:
-            logger.error("no license url")
+            logger.error("no doi (url)")
+            return []
 
-        logger.error(node)
+        udict["url"] = f"https://dx.doi.org/{doi}"
+        udict["scope"] = "34"
+        udict["access_info"] = "unknown"
 
-        return []
+        expression = JATS_XPATHS["article-oa-license"]
+        nodes = self.xpath(expression)
+
+        if len(nodes) > 0:
+            udict["access_info"] = "OALizenz"
+
+        return [udict]
 
     def xpath(self, expression):
         return self.dom.xpath(expression, namespaces=NAMESPACES)

@@ -94,6 +94,12 @@ class EPubArticle(unittest.TestCase):
                          self.testdata['abstracts'],
                          "abstracts")
 
+    def test09(self):
+        """urls"""
+        self.assertEqual(self.jobj.urls,
+                         self.testdata['urls'],
+                         "urls")
+
 
 class PPubArticle(unittest.TestCase):
 
@@ -159,6 +165,10 @@ class PPubArticle(unittest.TestCase):
         self.assertEqual(self.jobj.abstracts,
                          self.testdata['abstracts'],
                          "abstracts")
+
+    def test09(self):
+        """urls"""
+        self.assertNotIn('urls', self.testdata, "urls")
 
 
 if __name__ == '__main__':
