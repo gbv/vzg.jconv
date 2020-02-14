@@ -15,11 +15,12 @@ from vzg.jconv.interfaces import IArticle
 from vzg.jconv.interfaces import IConverter
 from vzg.jconv.gapi import NAMESPACES
 from vzg.jconv.gapi import JSON_SCHEMA
+from vzg.jconv.gapi import JATS_SPRINGER_AUTHORTYPE
+from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 from vzg.jconv.langcode import ISO_639
 from lxml import etree
 import logging
 import json
-from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 import jsonschema
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
@@ -37,7 +38,8 @@ JATS_XPATHS["journal-id"] = """//journal-meta/journal-id[@journal-id-type="{jour
 JATS_XPATHS["journal-issn"] = """//journal-meta/issn[@pub-type="{pubtype}"]/text()"""
 JATS_XPATHS["publisher-name"] = """//journal-meta/publisher/publisher-name/text()"""
 JATS_XPATHS["publisher-place"] = """//journal-meta/publisher/publisher-loc/text()"""
-JATS_XPATHS["article-persons"] = """//article-meta/contrib-group/contrib[@contrib-type="author"]"""
+JATS_XPATHS["article-persons"] = """//article-meta/contrib-group/contrib"""
+JATS_XPATHS["affiliation"] = """//article-meta/contrib-group/aff[@id="{rid}"]"""
 
 
 @implementer(IArticle)
@@ -141,6 +143,7 @@ class JatsArticle:
         """"""
         jdict = {"lang_code": self.lang_code,
                  "journal": self.journal,
+                 "persons": self.persons,
                  "primary_id": self.primary_id,
                  "other_ids": self.other_ids,
                  "title": self.title}
@@ -167,14 +170,90 @@ class JatsArticle:
 
         return [pdict]
 
-#     @property
-#     def persons(self):
-#         """Article persons"""
-#         logger = logging.getLogger(__name__)
-#         expression = JATS_XPATHS["article-persons"]
-#         node = self.xpath(expression)
-#
-#         print(node)
+    @property
+    def persons(self):
+        """Article persons"""
+        logger = logging.getLogger(__name__)
+
+        persons = []
+
+        expression = JATS_XPATHS["article-persons"]
+        nodes = self.xpath(expression)
+
+        for elem in nodes:
+            person = {"fullname": ""}
+
+            try:
+                person["firstname"] = elem.xpath("name/given-names/text()")[0]
+                person["fullname"] = person["firstname"]
+            except IndexError:
+                msg = "no firstname"
+                logger.error(msg)
+
+            try:
+                person["lastname"] = elem.xpath("name/surname/text()")[0]
+                person["fullname"] += f""" {person["lastname"]}"""
+            except IndexError:
+                msg = "no lastname"
+                logger.error(msg)
+
+            try:
+                person['role'] = JATS_SPRINGER_AUTHORTYPE[elem.get(
+                    "contrib-type")].value
+            except KeyError:
+                msg = "unknown authortype"
+                logger.error(msg)
+                continue
+
+            try:
+                affiliation = elem.xpath("""xref[@ref-type="aff"]""")[0]
+            except IndexError:
+                msg = "no affiliation"
+                logger.error(msg)
+                continue
+
+            rid = affiliation.get("rid")
+
+            if isinstance(rid, type(None)):
+                msg = "no affiliation"
+                logger.error(msg)
+                continue
+
+            aff_expression = JATS_XPATHS["affiliation"].format(rid=rid)
+
+            try:
+                affnode = self.xpath(aff_expression)[0]
+            except IndexError:
+                msg = "no affiliation"
+                logger.error(msg)
+                continue
+
+            affdict = {}
+
+            try:
+                affdict['name'] = affnode.xpath(
+                    """institution-wrap/institution[@content-type="org-name"]/text()""")[0]
+            except IndexError:
+                msg = "no affiliation name"
+                logger.error(msg)
+
+            affids = []
+
+            for affid in affnode.xpath("""institution-wrap/institution-id"""):
+                affiddict = {}
+
+                affiddict['type'] = affid.get("institution-id-type")
+                affiddict['id'] = affid.text
+
+                affids.append(affiddict)
+
+            affdict["affiliation_ids"] = affids
+
+            person["affiliation"] = affdict
+
+            persons.append(person)
+
+        return persons
 
     @property
     def primary_id(self):

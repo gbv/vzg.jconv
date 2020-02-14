@@ -70,6 +70,18 @@ class EPubArticle(unittest.TestCase):
                          self.testdata['journal'],
                          "journal")
 
+    def test05(self):
+        """other_ids"""
+        self.assertEqual(self.jobj.other_ids,
+                         self.testdata['other_ids'],
+                         "other_ids")
+
+    def test06(self):
+        """persons"""
+        self.assertEqual(self.jobj.persons,
+                         self.testdata['persons'],
+                         "persons")
+
 
 class PPubArticle(unittest.TestCase):
 
@@ -111,6 +123,18 @@ class PPubArticle(unittest.TestCase):
         self.assertEqual(self.jobj.journal,
                          self.testdata['journal'],
                          "journal")
+
+    def test05(self):
+        """other_ids"""
+        self.assertEqual(self.jobj.other_ids,
+                         self.testdata['other_ids'],
+                         "other_ids")
+
+    def test06(self):
+        """persons"""
+        self.assertEqual(self.jobj.persons,
+                         self.testdata['persons'],
+                         "persons")
 
 
 if __name__ == '__main__':

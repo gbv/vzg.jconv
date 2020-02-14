@@ -30,3 +30,9 @@ class JATS_SPRINGER_PUBTYPE(Enum):
 
     electronic = "epub"
     print = "ppub"
+
+
+class JATS_SPRINGER_AUTHORTYPE(Enum):
+    """"""
+
+    author = "aut"
