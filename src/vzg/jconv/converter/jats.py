@@ -36,6 +36,10 @@ JATS_XPATHS["other_ids_doi"] = """//article-meta/article-id[@pub-id-type="doi"]/
 JATS_XPATHS["article-title"] = "//article-meta/title-group/article-title/text()"
 JATS_XPATHS["journal-id"] = """//journal-meta/journal-id[@journal-id-type="{journaltype}"]/text()"""
 JATS_XPATHS["journal-issn"] = """//journal-meta/issn[@pub-type="{pubtype}"]/text()"""
+JATS_XPATHS["journal-volume"] = """//article-meta/volume/text()"""
+JATS_XPATHS["journal-issue"] = """//article-meta/issue/text()"""
+JATS_XPATHS["journal-start_page"] = """//article-meta/fpage/text()"""
+JATS_XPATHS["journal-end_page"] = """//article-meta/lpage/text()"""
 JATS_XPATHS["publisher-name"] = """//journal-meta/publisher/publisher-name/text()"""
 JATS_XPATHS["publisher-place"] = """//journal-meta/publisher/publisher-loc/text()"""
 JATS_XPATHS["article-persons"] = """//article-meta/contrib-group/contrib"""
@@ -135,6 +139,19 @@ class JatsArticle:
 
         if len(publisher) > 0:
             pdict["publisher"] = publisher
+
+        jdata = {"journal-volume": "volume",
+                 "journal-issue": "issue",
+                 "journal-start_page": "start_page",
+                 "journal-end_page": "end_page"}
+
+        for xkey, attr in jdata.items():
+            expression = JATS_XPATHS[xkey]
+            node = self.xpath(expression)
+            try:
+                pdict[attr] = node[0]
+            except IndexError:
+                logger.error(f"no journal {attr}")
 
         return pdict
 
