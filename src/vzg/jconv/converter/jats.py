@@ -214,6 +214,11 @@ class JatsArticle:
                 msg = "no lastname"
                 logger.error(msg)
 
+            if len(person["fullname"]) == 0:
+                msg = "no fullname"
+                logger.error(msg)
+                continue
+
             try:
                 person['role'] = JATS_SPRINGER_AUTHORTYPE[elem.get(
                     "contrib-type")].value
