@@ -46,6 +46,8 @@ JATS_XPATHS["article-persons"] = """//article-meta/contrib-group/contrib"""
 JATS_XPATHS["article-copyright"] = """//article-meta/permissions/copyright-statement/text()"""
 JATS_XPATHS["article-license"] = """//article-meta/permissions/license[contains(@xlink:href, 'creativecommons.org')]"""
 JATS_XPATHS["affiliation"] = """//article-meta/contrib-group/aff[@id="{rid}"]"""
+JATS_XPATHS["abstracts-lang_code"] = "//article-meta/abstract/@xml:lang"
+JATS_XPATHS["abstracts-sec"] = "//article-meta/abstract/sec"
 
 
 @implementer(IArticle)
@@ -71,10 +73,40 @@ class JatsArticle:
         self.pubtype = pubtype
 
     @property
+    def abstracts(self):
+        """Article abstracts"""
+        logger = logging.getLogger(__name__)
+
+        attributes = self.xpath(JATS_XPATHS["abstracts-lang_code"])
+
+        abstracts = []
+        abstract = {}
+
+        try:
+            abstract["lang_code"] = self.iso639.i1toi2[attributes[0]]
+        except IndexError:
+            logger.error("no lang_code")
+        except KeyError:
+            logger.error("no lang_code")
+
+        sections = self.xpath(JATS_XPATHS["abstracts-sec"])
+
+        for secnode in sections:
+            paras = [para.text for para in secnode.xpath("p")]
+            abstract["text"] = "\n\n".join(paras)
+
+        if "text" in abstract:
+            abstracts.append(abstract)
+
+        return abstracts
+
+    @property
     def copyright(self):
         """Article copyright"""
         logger = logging.getLogger(__name__)
         nodes = self.xpath(JATS_XPATHS['article-copyright'])
+
+        copyright = ""
 
         try:
             copyright = nodes[0]
@@ -129,7 +161,7 @@ class JatsArticle:
             node = self.xpath(expression)
 
             if len(node) == 0:
-                msg = f"no {jtype} journal_id"
+                msg = f"no {jtype} journal_id ({self.pubtype})"
                 logger.error(msg)
                 continue
 
@@ -173,7 +205,8 @@ class JatsArticle:
     @property
     def jdict(self):
         """"""
-        jdict = {"copyright": self.copyright,
+        jdict = {"abstracts": self.abstracts,
+                 "copyright": self.copyright,
                  "lang_code": self.lang_code,
                  "journal": self.journal,
                  "persons": self.persons,
@@ -202,7 +235,7 @@ class JatsArticle:
         try:
             pdict['id'] = node[0]
         except IndexError:
-            logger.error("no other_id (doi")
+            logger.error(("no other_id (doi)", self.pubtype))
 
         return [pdict]
 

@@ -88,6 +88,12 @@ class EPubArticle(unittest.TestCase):
                          self.testdata['copyright'],
                          "copyright")
 
+    def test08(self):
+        """abstracts"""
+        self.assertEqual(self.jobj.abstracts,
+                         self.testdata['abstracts'],
+                         "abstracts")
+
 
 class PPubArticle(unittest.TestCase):
 
@@ -147,6 +153,12 @@ class PPubArticle(unittest.TestCase):
         self.assertEqual(self.jobj.copyright,
                          self.testdata['copyright'],
                          "copyright")
+
+    def test08(self):
+        """abstracts"""
+        self.assertEqual(self.jobj.abstracts,
+                         self.testdata['abstracts'],
+                         "abstracts")
 
 
 if __name__ == '__main__':
