@@ -44,6 +44,7 @@ JATS_XPATHS["publisher-name"] = """//journal-meta/publisher/publisher-name/text(
 JATS_XPATHS["publisher-place"] = """//journal-meta/publisher/publisher-loc/text()"""
 JATS_XPATHS["article-persons"] = """//article-meta/contrib-group/contrib"""
 JATS_XPATHS["article-copyright"] = """//article-meta/permissions/copyright-statement/text()"""
+JATS_XPATHS["article-license"] = """//article-meta/permissions/license[contains(@xlink:href, 'creativecommons.org')]"""
 JATS_XPATHS["affiliation"] = """//article-meta/contrib-group/aff[@id="{rid}"]"""
 
 
@@ -179,6 +180,9 @@ class JatsArticle:
                  "primary_id": self.primary_id,
                  "other_ids": self.other_ids,
                  "title": self.title}
+
+        if self.pubtype == JATS_SPRINGER_PUBTYPE.electronic.value:
+            jdict['urls'] = self.urls
 
         return jdict
 
@@ -321,6 +325,22 @@ class JatsArticle:
             logger.error("no title")
 
         return ''
+
+    @property
+    def urls(self):
+        """Article URLs"""
+        logger = logging.getLogger(__name__)
+
+        expression = JATS_XPATHS["article-license"]
+
+        try:
+            node = self.xpath(expression)[0]
+        except IndexError:
+            logger.error("no license url")
+
+        logger.error(node)
+
+        return []
 
     def xpath(self, expression):
         return self.dom.xpath(expression, namespaces=NAMESPACES)
