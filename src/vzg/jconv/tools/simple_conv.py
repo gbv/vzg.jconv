@@ -70,6 +70,11 @@ def jats(options):
                     with open(apath, "wt") as fh:
                         fh.write(article.json)
 
+            if options.stop and jconv.validation_failed:
+                msg = "Validation problem"
+                logger.info(msg)
+                return None
+
 
 def run():
     """Start the application"""
@@ -108,6 +113,12 @@ def run():
                              type=str,
                              nargs=1,
                              help='Directory of JATS files')
+
+    parser_jats.add_argument("--stop",
+                             dest='stop',
+                             action='store_true',
+                             default=False,
+                             help='Stop if JSON Schema Validation fails')
 
     parser_jats.add_argument("--validate",
                              dest='validate',

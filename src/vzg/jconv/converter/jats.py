@@ -108,14 +108,14 @@ class JatsArticle:
         logger = logging.getLogger(__name__)
         nodes = self.xpath(JATS_XPATHS['article-copyright'])
 
-        copyright = ""
+        copyr = ""
 
         try:
-            copyright = nodes[0]
+            copyr = nodes[0]
         except IndexError:
             logger.error("no copyright")
 
-        return copyright
+        return copyr
 
     @property
     def lang_code(self):
@@ -437,6 +437,7 @@ class JatsConverter:
         self.iso639 = ISO_639() if isinstance(iso639, type(None)) else iso639
 
         self.validate = validate
+        self.validation_failed = False
 
     @property
     def pubtypes(self):
@@ -473,6 +474,7 @@ class JatsConverter:
                     self.articles.append(article)
                 except jsonschema.ValidationError as Exc:
                     logger.error(Exc, exc_info=False)
+                    self.validation_failed = True
 
                 continue
 
