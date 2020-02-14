@@ -33,7 +33,7 @@ JATS_XPATHS["pub-date"] = """//article-meta/pub-date[@date-type="{pubtype}"]"""
 JATS_XPATHS["pub-date-year"] = JATS_XPATHS["pub-date"] + """/year/text()"""
 JATS_XPATHS["primary_id"] = """//article-meta/article-id[@pub-id-type="publisher-id"]/text()"""
 JATS_XPATHS["other_ids_doi"] = """//article-meta/article-id[@pub-id-type="doi"]/text()"""
-JATS_XPATHS["article-title"] = "//article-meta/title-group/article-title/text()"
+JATS_XPATHS["article-title"] = "//article-meta/title-group/article-title/descendant-or-self::*/text()"
 JATS_XPATHS["journal-id"] = """//journal-meta/journal-id[@journal-id-type="{journaltype}"]/text()"""
 JATS_XPATHS["journal-issn"] = """//journal-meta/issn[@pub-type="{pubtype}"]/text()"""
 JATS_XPATHS["journal-volume"] = """//article-meta/volume/text()"""
@@ -76,6 +76,7 @@ class JatsArticle:
     @property
     def abstracts(self):
         """Article abstracts"""
+
         logger = logging.getLogger(__name__)
 
         attributes = self.xpath(JATS_XPATHS["abstracts-lang_code"])
@@ -97,7 +98,7 @@ class JatsArticle:
             paras = [para for para in paras if isinstance(para, str)]
             abstract["text"] = "\n\n".join(paras)
 
-        if "text" in abstract:
+        if len(abstract.get("text", "")) >= 1:
             abstracts.append(abstract)
 
         return abstracts
