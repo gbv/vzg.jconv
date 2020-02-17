@@ -18,6 +18,7 @@ from vzg.jconv.gapi import JSON_SCHEMA
 from vzg.jconv.gapi import JATS_SPRINGER_AUTHORTYPE
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 from vzg.jconv.langcode import ISO_639
+from vzg.jconv.utils import node2text
 from lxml import etree
 import logging
 import json
@@ -33,7 +34,7 @@ JATS_XPATHS["pub-date"] = """//article-meta/pub-date[@date-type="{pubtype}"]"""
 JATS_XPATHS["pub-date-year"] = JATS_XPATHS["pub-date"] + """/year/text()"""
 JATS_XPATHS["primary_id"] = """//article-meta/article-id[@pub-id-type="publisher-id"]/text()"""
 JATS_XPATHS["other_ids_doi"] = """//article-meta/article-id[@pub-id-type="doi"]/text()"""
-JATS_XPATHS["article-title"] = "//article-meta/title-group/article-title/descendant-or-self::*/text()"
+JATS_XPATHS["article-title"] = "//article-meta/title-group/article-title"
 JATS_XPATHS["journal-id"] = """//journal-meta/journal-id[@journal-id-type="{journaltype}"]/text()"""
 JATS_XPATHS["journal-issn"] = """//journal-meta/issn[@pub-type="{pubtype}"]/text()"""
 JATS_XPATHS["journal-volume"] = """//article-meta/volume/text()"""
@@ -356,7 +357,7 @@ class JatsArticle:
         node = self.xpath(expression)
 
         try:
-            return node[0]
+            return node2text(node[0])
         except IndexError:
             logger.error("no title")
 
