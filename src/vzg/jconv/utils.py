@@ -26,7 +26,9 @@ def node2text(node):
     """
     stripchars = ("\n", "\t")
 
-    nodetext = etree.tostring(node, method="text").decode()
+    nodebytes = etree.tostring(node, encoding="utf-8", method="text")
+    nodetext = nodebytes.decode()
+
     for c_ in stripchars:
         nodetext = nodetext.replace(c_, '')
     return nodetext
