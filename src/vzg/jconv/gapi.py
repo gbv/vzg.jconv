@@ -33,6 +33,13 @@ class JATS_SPRINGER_PUBTYPE(Enum):
     print = "ppub"
 
 
+class JATS_SPRINGER_JOURNALTYPE(Enum):
+    """"""
+
+    epub = "eissn"
+    ppub = "pissn"
+
+
 class JATS_SPRINGER_AUTHORTYPE(Enum):
     """"""
 

@@ -17,6 +17,7 @@ from pathlib import Path
 from vzg.jconv.converter.jats import JatsConverter
 from vzg.jconv.converter.jats import JatsArticle
 from lxml import etree
+from pprint import pprint
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = 'plaintext'
@@ -76,6 +77,7 @@ class TestCase(unittest.TestCase):
 
         for article in jconv.articles:
             self.assertIsInstance(article, JatsArticle, "article")
+            # pprint(article.json)
 
 
 if __name__ == '__main__':

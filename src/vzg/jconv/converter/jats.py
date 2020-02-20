@@ -17,6 +17,7 @@ from vzg.jconv.gapi import NAMESPACES
 from vzg.jconv.gapi import JSON_SCHEMA
 from vzg.jconv.gapi import JATS_SPRINGER_AUTHORTYPE
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
+from vzg.jconv.gapi import JATS_SPRINGER_JOURNALTYPE
 from vzg.jconv.langcode import ISO_639
 from vzg.jconv.utils import node2text
 from lxml import etree
@@ -49,6 +50,7 @@ JATS_XPATHS["article-license-type"] = """//article-meta/permissions/license/@lic
 JATS_XPATHS["article-oa-license"] = """//article-meta/permissions/license[contains(@xlink:href, 'creativecommons.org')]"""
 JATS_XPATHS["affiliation"] = """//article-meta/contrib-group/aff[@id="{rid}"]"""
 JATS_XPATHS["abstracts-lang_code"] = "//article-meta/abstract/@xml:lang"
+JATS_XPATHS["abstracts"] = "//article-meta/abstract"
 JATS_XPATHS["abstracts-sec"] = "//article-meta/abstract/sec"
 
 
@@ -83,7 +85,7 @@ class JatsArticle:
         attributes = self.xpath(JATS_XPATHS["abstracts-lang_code"])
 
         abstracts = []
-        abstract = {}
+        abstract = {'text': ""}
 
         try:
             abstract["lang_code"] = self.iso639.i1toi2[attributes[0]]
@@ -95,9 +97,9 @@ class JatsArticle:
         sections = self.xpath(JATS_XPATHS["abstracts-sec"])
 
         for secnode in sections:
-            paras = [para.text for para in secnode.xpath("p")]
+            paras = [node2text(para) for para in secnode.xpath("p")]
             paras = [para for para in paras if isinstance(para, str)]
-            abstract["text"] = "\n\n".join(paras)
+            abstract["text"] += "\n\n".join(paras)
 
         if len(abstract.get("text", "")) >= 1:
             abstracts.append(abstract)
@@ -170,6 +172,10 @@ class JatsArticle:
                 continue
 
             jid = {'type': jtype, 'id': node[0]}
+
+            if jid['type'] in JATS_SPRINGER_JOURNALTYPE.__members__:
+                jid['type'] = JATS_SPRINGER_JOURNALTYPE[jid['type']].value
+
             pdict["journal_ids"].append(jid)
 
         publisher = {}
