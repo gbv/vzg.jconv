@@ -155,13 +155,18 @@ class JatsArticle:
         except IndexError:
             logger.error("no journal title")
 
-        expression = JATS_XPATHS["pub-date-year"].format(pubtype=self.pubtype)
+        expression = JATS_XPATHS["pub-date"].format(pubtype=self.pubtype)
         node = self.xpath(expression)
 
-        try:
-            pdict['year'] = node[0]
-        except IndexError:
-            logger.error("no journal year")
+        dfmt = {"day": "{0:02}", "month": "{0:02}", "year": "{0}"}
+        for dentry in dfmt:
+            try:
+                xepr = f"{dentry}/text()"
+                val = int(node[0].xpath(xepr)[0])
+                pdict[dentry] = dfmt[dentry].format(val)
+            except IndexError:
+                msg = f"no journal {dentry}"
+                logger.error(msg)
 
         for jtype, expression in jids.items():
             node = self.xpath(expression)

@@ -77,7 +77,7 @@ class TestCase(unittest.TestCase):
 
         for article in jconv.articles:
             self.assertIsInstance(article, JatsArticle, "article")
-            # pprint(article.json)
+            # print(article.json)
 
 
 if __name__ == '__main__':
