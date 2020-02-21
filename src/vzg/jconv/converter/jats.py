@@ -53,6 +53,8 @@ JATS_XPATHS["affiliation"] = """//article-meta/contrib-group/aff[@id="{rid}"]"""
 JATS_XPATHS["abstracts-lang_code"] = "//article-meta/abstract/@xml:lang"
 JATS_XPATHS["abstracts"] = "//article-meta/abstract"
 JATS_XPATHS["abstracts-sec"] = "//article-meta/abstract/sec"
+JATS_XPATHS["subjects-lang_code"] = "//article-meta/kwd-group/@xml:lang"
+JATS_XPATHS["subjects"] = "//article-meta/kwd-group/kwd/text()"
 
 
 @implementer(IArticle)
@@ -235,6 +237,7 @@ class JatsArticle:
                  "persons": self.persons,
                  "primary_id": self.primary_id,
                  "other_ids": self.other_ids,
+                 "subject_terms": self.subjects,
                  "title": self.title}
 
         if self.pubtype == JATS_SPRINGER_PUBTYPE.electronic.value:
@@ -366,6 +369,38 @@ class JatsArticle:
             logger.error("no primary_id")
 
         return pdict
+
+    @property
+    def subjects(self):
+        """Article subject_terms"""
+        logger = logging.getLogger(__name__)
+
+        attributes = self.xpath(JATS_XPATHS["subjects-lang_code"])
+        subjects = []
+        subject = {'scheme': "group", "terms": [], "lang_code": ""}
+
+        try:
+            subject["lang_code"] = self.iso639.i1toi2[attributes[0]]
+        except IndexError:
+            logger.error("no lang_code")
+        except KeyError:
+            logger.error("no lang_code")
+
+        for node in self.xpath(JATS_XPATHS["article-custom-meta"]):
+            if node.text == "article-type":
+                pnode = node.getparent()
+                subject["terms"].append(pnode.find('meta-value').text)
+                break
+
+        expression = JATS_XPATHS["subjects"]
+
+        for node in self.xpath(expression):
+            subject["terms"].append(node)
+
+        if len(subject["lang_code"]) > 0 and len(subject["terms"]) > 0:
+            subjects.append(subject)
+
+        return subjects
 
     @property
     def title(self):
