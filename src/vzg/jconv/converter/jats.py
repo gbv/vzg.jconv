@@ -47,6 +47,7 @@ JATS_XPATHS["publisher-place"] = """//journal-meta/publisher/publisher-loc/text(
 JATS_XPATHS["article-persons"] = """//article-meta/contrib-group/contrib"""
 JATS_XPATHS["article-copyright"] = """//article-meta/permissions/copyright-statement/text()"""
 JATS_XPATHS["article-license-type"] = """//article-meta/permissions/license/@license-type"""
+JATS_XPATHS["article-custom-meta"] = """//article-meta/custom-meta-group/custom-meta/meta-name"""
 JATS_XPATHS["article-oa-license"] = """//article-meta/permissions/license[contains(@xlink:href, 'creativecommons.org')]"""
 JATS_XPATHS["affiliation"] = """//article-meta/contrib-group/aff[@id="{rid}"]"""
 JATS_XPATHS["abstracts-lang_code"] = "//article-meta/abstract/@xml:lang"
@@ -399,6 +400,13 @@ class JatsArticle:
         udict["url"] = f"https://dx.doi.org/{doi}"
         udict["scope"] = "34"
         udict["access_info"] = "unknown"
+
+        for node in self.xpath(JATS_XPATHS["article-custom-meta"]):
+            if node.text == "open-access":
+                pnode = node.getparent()
+                if pnode.find('meta-value').text == "true":
+                    udict["access_info"] = "OA"
+                break
 
         expression = JATS_XPATHS["article-oa-license"]
         nodes = self.xpath(expression)
