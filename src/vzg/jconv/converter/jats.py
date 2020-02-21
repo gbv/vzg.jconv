@@ -95,11 +95,18 @@ class JatsArticle:
             logger.error("no lang_code")
 
         sections = self.xpath(JATS_XPATHS["abstracts-sec"])
+        atext = []
 
         for secnode in sections:
+            nodes = secnode.xpath("title")
+            if len(nodes) > 0:
+                atext.append(nodes[0].text)
+
             paras = [node2text(para) for para in secnode.xpath("p")]
-            paras = [para for para in paras if isinstance(para, str)]
-            abstract["text"] += "\n\n".join(paras)
+            atext += paras
+
+        atext = [para for para in atext if isinstance(para, str)]
+        abstract["text"] += "\n\n".join(atext)
 
         if len(abstract.get("text", "")) >= 1:
             abstracts.append(abstract)
