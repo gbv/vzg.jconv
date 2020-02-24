@@ -108,7 +108,7 @@ class JatsArticle:
         for secnode in sections:
             nodes = secnode.xpath("title")
             if len(nodes) > 0:
-                atext.append(nodes[0].text)
+                atext.append(node2text(nodes[0]))
 
             paras = [node2text(para) for para in secnode.xpath("p")]
             atext += paras

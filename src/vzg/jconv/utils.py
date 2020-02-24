@@ -17,7 +17,10 @@ from vzg.jconv.gapi import NAMESPACES
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = 'plaintext'
 
-TEXREX = re.compile("(\$\$\s.*\s\$\$)")
+# TeX formular
+TEXREX = re.compile("(\${1,2}.*\${1,2})")
+# Upper case greek letters within a formula
+GREEX = re.compile(r"\\up(\w+)")
 
 
 def node2text(node):
@@ -37,10 +40,18 @@ def node2text(node):
 
     # remove TeX commands
     # extract the formula description
+
+    def greekup(matchobj):
+        print(matchobj)
+        gc_ = "\\"
+        gc_ += matchobj.group(1)
+        return gc_
+
     for texnode in node.iter("tex-math"):
         match = TEXREX.search(texnode.text)
         if match is not None:
             formula = match.group(1)
+            formula = GREEX.sub(greekup, formula)
             newelem = etree.Element("tex-math")
             newelem.text = formula
             texnode.getparent().replace(texnode, newelem)
