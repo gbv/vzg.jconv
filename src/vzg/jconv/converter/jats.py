@@ -24,7 +24,6 @@ from lxml import etree
 import logging
 import json
 import jsonschema
-import re
 from copy import deepcopy
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
@@ -57,9 +56,6 @@ JATS_XPATHS["abstracts"] = "//article-meta/abstract"
 JATS_XPATHS["abstracts-sec"] = "//article-meta/abstract/sec"
 JATS_XPATHS["subjects-lang_code"] = "//article-meta/kwd-group/@xml:lang"
 JATS_XPATHS["subjects"] = "//article-meta/kwd-group/kwd/text()"
-
-
-TEXREX = re.compile("(\$\$\s.*\s\$\$)")
 
 
 @implementer(IArticle)
@@ -98,11 +94,15 @@ class JatsArticle:
         try:
             abstract["lang_code"] = self.iso639.i1toi2[attributes[0]]
         except IndexError:
-            logger.error("no lang_code")
+            logger.error("abstracts: no lang_code")
         except KeyError:
-            logger.error("no lang_code")
+            logger.error("abstracts: no lang_code")
 
         sections = self.xpath(JATS_XPATHS["abstracts-sec"])
+
+        if len(sections) == 0:
+            sections = self.xpath(JATS_XPATHS["abstracts"])
+
         atext = []
 
         for secnode in sections:
@@ -420,26 +420,7 @@ class JatsArticle:
             logger.error("no title")
             return ""
 
-        texrex = re.compile("(\$\$\s.*\s\$\$)")
-
-        textnode = deepcopy(node)
-
-        # remove mml:math
-        expression = "inline-formula/alternatives/mml:math"
-        for mathnode in textnode.xpath(expression, namespaces=NAMESPACES):
-            mathnode.clear()
-
-        # remove TeX commands
-        # extract the formula description
-        for texnode in textnode.iter("tex-math"):
-            match = texrex.search(texnode.text)
-            if match is not None:
-                formula = match.group(1)
-                newelem = etree.Element("tex-math")
-                newelem.text = formula
-                texnode.getparent().replace(texnode, newelem)
-
-        return node2text(textnode)
+        return node2text(node)
 
     @property
     def urls(self):
