@@ -20,7 +20,8 @@ __schema_path__ = Path(__file__).parent.absolute() / \
     "schema" / "article_schema.json"
 
 NAMESPACES = {'xml': 'http://www.w3.org/XML/1998/namespace',
-              'xlink': "http://www.w3.org/1999/xlink"}
+              'xlink': "http://www.w3.org/1999/xlink",
+              "mml": "http://www.w3.org/1998/Math/MathML"}
 
 with open(__schema_path__, "rt") as fh:
     JSON_SCHEMA = json.load(fh)
