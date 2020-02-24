@@ -21,6 +21,10 @@ __docformat__ = 'plaintext'
 TEXREX = re.compile("(\${1,2}.*\${1,2})")
 # Upper case greek letters within a formula
 GREEX = re.compile(r"\\up(\w+)")
+# Subscript
+SUBREX = re.compile(r"\s*(\w+)<sub>(.*?)\</sub>")
+# Superscript
+SUPREX = re.compile(r"\s*(\w+)<sup>(.*?)\</sup>")
 
 
 def node2text(node):
@@ -41,8 +45,7 @@ def node2text(node):
     # remove TeX commands
     # extract the formula description
 
-    def greekup(matchobj):
-        print(matchobj)
+    def repl_greek(matchobj):
         gc_ = "\\"
         gc_ += matchobj.group(1)
         return gc_
@@ -51,12 +54,29 @@ def node2text(node):
         match = TEXREX.search(texnode.text)
         if match is not None:
             formula = match.group(1)
-            formula = GREEX.sub(greekup, formula)
+            formula = GREEX.sub(repl_greek, formula)
             newelem = etree.Element("tex-math")
             newelem.text = formula
             texnode.getparent().replace(texnode, newelem)
 
-    nodebytes = etree.tostring(node, encoding="utf-8", method="text")
+    # convert <sup> and <sub> to Tex
+
+    nodebytes = etree.tostring(node, encoding="utf-8")
+    nodetext = nodebytes.decode()
+
+    def repl_sup(matchobj):
+        gc_ = "$ {0}^{1} $".format(matchobj.group(1), matchobj.group(2))
+        return gc_
+
+    def repl_sub(matchobj):
+        gc_ = "$ {0}_{1} $".format(matchobj.group(1), matchobj.group(2))
+        return gc_
+
+    nodetext = SUPREX.sub(repl_sup, nodetext)
+    nodetext = SUBREX.sub(repl_sub, nodetext)
+
+    snode = etree.fromstring(nodetext)
+    nodebytes = etree.tostring(snode, encoding="utf-8", method="text")
     nodetext = nodebytes.decode()
 
     for c_ in stripchars:
