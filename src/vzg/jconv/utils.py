@@ -22,9 +22,9 @@ TEXREX = re.compile("(\${1,2}.*\${1,2})")
 # Upper case greek letters within a formula
 GREEX = re.compile(r"\\up(\w+)")
 # Subscript
-SUBREX = re.compile(r"\s*(\w+)<sub>(.*?)\</sub>")
+SUBREX = re.compile(r"(\s*)(\w+)<sub>(.*?)\</sub>")
 # Superscript
-SUPREX = re.compile(r"\s*(\w+)<sup>(.*?)\</sup>")
+SUPREX = re.compile(r"(\s*)(\w+)<sup>(.*?)\</sup>")
 
 
 def node2text(node):
@@ -65,11 +65,13 @@ def node2text(node):
     nodetext = nodebytes.decode()
 
     def repl_sup(matchobj):
-        gc_ = "$ {0}^{1} $".format(matchobj.group(1), matchobj.group(2))
+        gc_ = "{0}$ {1}^{2} $".format(matchobj.group(
+            1), matchobj.group(2), matchobj.group(3))
         return gc_
 
     def repl_sub(matchobj):
-        gc_ = "$ {0}_{1} $".format(matchobj.group(1), matchobj.group(2))
+        gc_ = "{0}$ {1}_{2} $".format(matchobj.group(
+            1), matchobj.group(2), matchobj.group(3))
         return gc_
 
     nodetext = SUPREX.sub(repl_sup, nodetext)
