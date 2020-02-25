@@ -65,12 +65,12 @@ def node2text(node):
     nodetext = nodebytes.decode()
 
     def repl_sup(matchobj):
-        gc_ = "{0}$ {1}^{2} $".format(matchobj.group(
+        gc_ = "{0}$ {1}^{{{2}}} $".format(matchobj.group(
             1), matchobj.group(2), matchobj.group(3))
         return gc_
 
     def repl_sub(matchobj):
-        gc_ = "{0}$ {1}_{2} $".format(matchobj.group(
+        gc_ = "{0}$ {1}_{{{2}}} $".format(matchobj.group(
             1), matchobj.group(2), matchobj.group(3))
         return gc_
 
