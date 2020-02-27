@@ -80,10 +80,6 @@ def run():
     """Start the application"""
     from argparse import ArgumentParser
 
-    logger = logging.getLogger()
-    logger.addHandler(logging.StreamHandler())
-    logger.setLevel(logging.WARNING)
-
     description = "Simple conversion tool."
 
     parser = ArgumentParser(description=description)
@@ -92,6 +88,13 @@ def run():
 
     parser_jats = subparsers.add_parser('jats',
                                         help='Convert JATS files')
+
+    parser_jats.add_argument("--logfile",
+                             default="",
+                             dest="logfile",
+                             metavar='Logfile',
+                             type=str,
+                             nargs="?")
 
     parser_jats.add_argument("-n",
                              "--dry-run",
@@ -108,12 +111,6 @@ def run():
                              default="output",
                              help='Directory of JSON files')
 
-    parser_jats.add_argument(dest="jfiles",
-                             metavar='Directory',
-                             type=str,
-                             nargs=1,
-                             help='Directory of JATS files')
-
     parser_jats.add_argument("--stop",
                              dest='stop',
                              action='store_true',
@@ -126,6 +123,12 @@ def run():
                              default=False,
                              help='JSON Schema Validation')
 
+    parser_jats.add_argument(dest="jfiles",
+                             metavar='Directory',
+                             type=str,
+                             nargs=1,
+                             help='Directory of JATS files')
+
     parser_jats.set_defaults(func=jats)
 
     parser.add_argument("-v",
@@ -136,6 +139,16 @@ def run():
                         help='be verbose')
 
     options = parser.parse_args()
+
+    logger = logging.getLogger()
+
+    if len(options.logfile.strip()) > 0:
+        lpath = Path(options.logfile.strip()).absolute()
+        fh = logging.FileHandler(lpath)
+        logger.addHandler(fh)
+
+    logger.addHandler(logging.StreamHandler())
+    logger.setLevel(logging.WARNING)
 
     if options.verbose:
         logger.setLevel(logging.INFO)
