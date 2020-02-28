@@ -31,7 +31,13 @@ def fromarchive(options):
 
     with zipfile.ZipFile(dst, 'w') as jsonarchive:
         with zipfile.ZipFile(jpath) as xmlarchive:
-            for zipinfo in xmlarchive.infolist():
+            num_xml = 0
+            for name in xmlarchive.namelist():
+                num_xml += 1
+
+            num_xml = float(num_xml)
+
+            for i, zipinfo in enumerate(xmlarchive.infolist()):
                 with tempfile.NamedTemporaryFile("w+b") as tmpfh:
                     tmpfh.write(xmlarchive.read(zipinfo))
                     tmpfh.flush()
@@ -39,7 +45,8 @@ def fromarchive(options):
                     jatspath = Path(tmpfh.name)
                     zipath = Path(zipinfo.filename)
 
-                    msg = f"{zipinfo.filename}"
+                    xpercent = i / num_xml * 100
+                    msg = f"{zipinfo.filename} ({xpercent:.2f}%)"
                     logger.info(msg)
 
                     jconv = JatsConverter(jatspath, validate=options.validate)
