@@ -13,10 +13,54 @@
 import logging
 from pathlib import Path
 import os
+import zipfile
+import tempfile
 from vzg.jconv.converter.jats import JatsConverter
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = 'plaintext'
+
+
+def fromarchive(options):
+    """Uses a ZIP Archive as source"""
+    logger = logging.getLogger(__name__)
+
+    jpath = Path(options.jfiles[0]).absolute()
+    opath = Path(options.outdir).absolute()
+    dst = opath / jpath.name
+
+    with zipfile.ZipFile(dst, 'w') as jsonarchive:
+        with zipfile.ZipFile(jpath) as xmlarchive:
+            for zipinfo in xmlarchive.infolist():
+                with tempfile.NamedTemporaryFile("w+b") as tmpfh:
+                    tmpfh.write(xmlarchive.read(zipinfo))
+                    tmpfh.flush()
+
+                    jatspath = Path(tmpfh.name)
+                    zipath = Path(zipinfo.filename)
+
+                    msg = f"{zipinfo.filename}"
+                    logger.info(msg)
+
+                    jconv = JatsConverter(jatspath, validate=options.validate)
+                    jconv.run()
+
+                    anum = len(jconv.articles)
+                    msg = f"\t{anum} article(s)"
+                    logger.info(msg)
+
+                    if options.dry_run is False:
+                        for article in jconv.articles:
+                            aname = f"{zipath.stem}_{article.pubtype}.json"
+                            apath = zipath / aname
+
+                            jsonarchive.writestr(apath.as_posix(),
+                                                 article.json)
+
+                    if options.stop and jconv.validation_failed:
+                        msg = "Validation problem"
+                        logger.info(msg)
+                        break
 
 
 def jats(options):
@@ -36,12 +80,17 @@ def jats(options):
     jpath = Path(options.jfiles[0]).absolute()
     opath = Path(options.outdir).absolute()
 
-    if not jpath.is_dir():
-        logger.info("No directory")
-        return None
-
     if not opath.exists():
         opath.mkdir(0o755, parents=True)
+
+    if jpath.is_file and zipfile.is_zipfile(jpath):
+        fromarchive(options)
+        return None
+
+    if not jpath.is_dir():
+        logger.info("No directory")
+
+        return None
 
     for dir_name, subdir_list, file_list in os.walk(jpath):
         logger.info(f'Found directory: {dir_name}')
@@ -124,10 +173,10 @@ def run():
                              help='JSON Schema Validation')
 
     parser_jats.add_argument(dest="jfiles",
-                             metavar='Directory',
+                             metavar='Directory / ZIP-File',
                              type=str,
                              nargs=1,
-                             help='Directory of JATS files')
+                             help='Directory or archive file of JATS files')
 
     parser_jats.set_defaults(func=jats)
 
