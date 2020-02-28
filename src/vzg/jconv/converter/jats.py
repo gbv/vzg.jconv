@@ -24,7 +24,6 @@ from lxml import etree
 import logging
 import json
 import jsonschema
-from copy import deepcopy
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = 'plaintext'
@@ -141,14 +140,16 @@ class JatsArticle:
         """Article lang_code"""
         logger = logging.getLogger(__name__)
         attributes = self.xpath(JATS_XPATHS['lang_code'])
+        lcode = []
+
         try:
-            lang_code = self.iso639.i1toi2[attributes[0]]
+            lcode.append(self.iso639.i1toi2[attributes[0]])
         except IndexError:
             logger.error("no lang_code")
         except KeyError:
             logger.error("no lang_code")
 
-        return [lang_code]
+        return lcode
 
     @property
     def journal(self):
