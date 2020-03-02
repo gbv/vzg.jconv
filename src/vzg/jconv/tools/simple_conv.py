@@ -62,7 +62,9 @@ def fromarchive(options):
                             apath = zipath / aname
 
                             jsonarchive.writestr(apath.as_posix(),
-                                                 article.json)
+                                                 article.json,
+                                                 compress_type=zipfile.ZIP_DEFLATED,
+                                                 compresslevel=6)
 
                     if options.stop and jconv.validation_failed:
                         msg = "Validation problem"
