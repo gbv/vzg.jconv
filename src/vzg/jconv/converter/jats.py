@@ -129,7 +129,7 @@ class JatsArticle:
         copyr = ""
 
         try:
-            copyr = nodes[0]
+            copyr = nodes[0].strip()
         except IndexError:
             logger.error("no copyright")
 
@@ -167,7 +167,7 @@ class JatsArticle:
         expression = JATS_XPATHS["journal-title"]
         node = self.xpath(expression)
         try:
-            pdict['title'] = node[0]
+            pdict['title'] = node[0].strip()
         except IndexError:
             logger.error("no journal title")
 
@@ -204,14 +204,14 @@ class JatsArticle:
         expression = JATS_XPATHS["publisher-name"]
         node = self.xpath(expression)
         try:
-            publisher['name'] = node[0]
+            publisher['name'] = node[0].strip()
         except IndexError:
             logger.error("no publisher name")
 
         expression = JATS_XPATHS["publisher-place"]
         node = self.xpath(expression)
         try:
-            publisher['place'] = node[0]
+            publisher['place'] = node[0].strip()
         except IndexError:
             logger.error("no publisher place")
 
@@ -285,14 +285,14 @@ class JatsArticle:
             person = {"fullname": ""}
 
             try:
-                person["firstname"] = elem.xpath("name/given-names/text()")[0]
+                person["firstname"] = elem.xpath("name/given-names/text()")[0].strip()
                 person["fullname"] = person["firstname"]
             except IndexError:
                 msg = "no firstname"
                 logger.error(msg)
 
             try:
-                person["lastname"] = elem.xpath("name/surname/text()")[0]
+                person["lastname"] = elem.xpath("name/surname/text()")[0].strip()
                 person["fullname"] += f""" {person["lastname"]}"""
             except IndexError:
                 msg = "no lastname"
@@ -338,7 +338,7 @@ class JatsArticle:
 
             try:
                 affdict['name'] = affnode.xpath(
-                    """institution-wrap/institution[@content-type="org-name"]/text()""")[0]
+                    """institution-wrap/institution[@content-type="org-name"]/text()""")[0].strip()
             except IndexError:
                 msg = "no affiliation name"
                 logger.error(msg)
