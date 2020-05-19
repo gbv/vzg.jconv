@@ -54,7 +54,7 @@ JATS_XPATHS["abstracts-lang_code"] = "//article-meta/abstract/@xml:lang"
 JATS_XPATHS["abstracts"] = "//article-meta/abstract"
 JATS_XPATHS["abstracts-sec"] = "//article-meta/abstract/sec"
 JATS_XPATHS["subjects-lang_code"] = "//article-meta/kwd-group/@xml:lang"
-JATS_XPATHS["subjects"] = "//article-meta/kwd-group/kwd/text()"
+JATS_XPATHS["subjects"] = "//article-meta/kwd-group"
 
 
 @implementer(IArticle)
@@ -383,14 +383,18 @@ class JatsArticle:
 
         attributes = self.xpath(JATS_XPATHS["subjects-lang_code"])
         subjects = []
-        subject = {'scheme': "group", "terms": [], "lang_code": ""}
+        lang_code = ""
 
         try:
-            subject["lang_code"] = self.iso639.i1toi2[attributes[0]]
+            lang_code = self.iso639.i1toi2[attributes[0]]
         except IndexError:
             logger.error("no lang_code")
+            return []
         except KeyError:
             logger.error("no lang_code")
+            return []
+
+        subject = {'scheme': "form", "terms": [], "lang_code": lang_code}
 
         for node in self.xpath(JATS_XPATHS["article-custom-meta"]):
             if node.text == "article-type":
@@ -398,13 +402,30 @@ class JatsArticle:
                 subject["terms"].append(pnode.find('meta-value').text)
                 break
 
-        expression = JATS_XPATHS["subjects"]
-
-        for node in self.xpath(expression):
-            subject["terms"].append(node)
-
         if len(subject["lang_code"]) > 0 and len(subject["terms"]) > 0:
             subjects.append(subject)
+
+        subject = {'scheme': "group", "terms": [], "lang_code": lang_code}
+
+        expression = JATS_XPATHS["subjects"]
+        subjext_exp = ".//kwd/text()"
+        scheme_exp = ".//title/text()"
+
+        for groupnode in self.xpath(expression):
+            try:
+                title = groupnode.xpath(scheme_exp)[0]
+            except IndexError:
+                continue
+
+            subject = {'scheme': "group" if title == "Keywords" else title,
+                       "terms": [],
+                       "lang_code": lang_code}
+
+            for node in groupnode.xpath(subjext_exp):
+                subject["terms"].append(node)
+
+            if len(subject["lang_code"]) > 0 and len(subject["terms"]) > 0:
+                subjects.append(subject)
 
         return subjects
 
