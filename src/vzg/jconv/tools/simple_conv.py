@@ -176,6 +176,7 @@ def springer(options):
                     if options.dry_run is False:
                         for j, article in enumerate(jconv.articles):
                             aname = f"{deliverysignature}-{i}-{j}.json"
+                            logger.info(aname)
                             jsonarchive.writestr(aname,
                                                  article.json,
                                                  compress_type=zipfile.ZIP_DEFLATED)
