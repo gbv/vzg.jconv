@@ -363,12 +363,28 @@ class JatsArticle:
 
     @property
     def primary_id(self):
-        """Article primary_id"""
+        """Article primary_id
+
+        The primary_id needs to be extracted from the DOI.
+        The publisher-id is not reliable enough.
+        """
         logger = logging.getLogger(__name__)
-        expression = JATS_XPATHS["primary_id"]
+
+        expression = JATS_XPATHS["other_ids_doi"]
         node = self.xpath(expression)
 
         pdict = {"type": "SPRINGER", "id": ""}
+
+        try:
+            prefix, primary_id = node[0].split("/")
+            pdict['id'] = primary_id
+            return pdict
+        except (IndexError, ValueError):
+            logger.error("primary_id: no doi")
+
+        expression = JATS_XPATHS["primary_id"]
+        node = self.xpath(expression)
+
         try:
             pdict['id'] = node[0]
         except IndexError:
