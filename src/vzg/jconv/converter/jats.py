@@ -376,8 +376,8 @@ class JatsArticle:
         pdict = {"type": "SPRINGER", "id": ""}
 
         try:
-            prefix, primary_id = node[0].split("/")
-            pdict['id'] = primary_id
+            doi_path = node[0].split("/")
+            pdict['id'] = doi_path[-1]
             return pdict
         except (IndexError, ValueError):
             logger.error("primary_id: no doi")
