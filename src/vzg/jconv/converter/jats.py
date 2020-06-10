@@ -425,11 +425,11 @@ class JatsArticle:
 
         expression = JATS_XPATHS["subjects"]
         subjext_exp = ".//kwd/text()"
-        scheme_exp = ".//title/text()"
+        scheme_exp = ".//title"
 
         for groupnode in self.xpath(expression):
             try:
-                title = groupnode.xpath(scheme_exp)[0]
+                title = node2text(groupnode.xpath(scheme_exp)[0])
             except IndexError:
                 continue
 
