@@ -53,6 +53,7 @@ JATS_XPATHS["affiliation"] = """//article-meta/contrib-group/aff[@id="{rid}"]"""
 JATS_XPATHS["abstracts-lang_code"] = "//article-meta/abstract/@xml:lang"
 JATS_XPATHS["abstracts"] = "//article-meta/abstract"
 JATS_XPATHS["abstracts-sec"] = "//article-meta/abstract/sec"
+JATS_XPATHS["abstracts-sec-node"] = ".//sec"
 JATS_XPATHS["subjects-lang_code"] = "//article-meta/kwd-group/@xml:lang"
 JATS_XPATHS["subjects"] = "//article-meta/kwd-group"
 
@@ -85,37 +86,32 @@ class JatsArticle:
 
         logger = logging.getLogger(__name__)
 
-        attributes = self.xpath(JATS_XPATHS["abstracts-lang_code"])
-
         abstracts = []
         abstract = {'text': ""}
+        langkey = f"{{{NAMESPACES['xml']}}}lang"
 
-        try:
-            abstract["lang_code"] = self.iso639.i1toi2[attributes[0]]
-        except IndexError:
-            logger.error("abstracts: no lang_code")
-        except KeyError:
-            logger.error("abstracts: no lang_code")
+        for node in self.xpath(JATS_XPATHS["abstracts"]):
+            abstract = {'text': ""}
+            atext = []
 
-        sections = self.xpath(JATS_XPATHS["abstracts-sec"])
+            try:
+                abstract["lang_code"] = self.iso639.i1toi2[node.attrib[langkey]]
+            except IndexError:
+                logger.error("abstracts: no lang_code")
+            except KeyError:
+                logger.error("abstracts: no lang_code")
 
-        if len(sections) == 0:
-            sections = self.xpath(JATS_XPATHS["abstracts"])
+            for secnode in node.xpath(JATS_XPATHS["abstracts-sec-node"]):
+                nodes = secnode.xpath("title")
+                if len(nodes) > 0:
+                    atext.append(node2text(nodes[0]))
 
-        atext = []
+                paras = [node2text(para) for para in secnode.xpath("p")]
+                atext += paras
 
-        for secnode in sections:
-            nodes = secnode.xpath("title")
-            if len(nodes) > 0:
-                atext.append(node2text(nodes[0]))
+            atext = [para for para in atext if isinstance(para, str)]
+            abstract["text"] += "\n\n".join(atext)
 
-            paras = [node2text(para) for para in secnode.xpath("p")]
-            atext += paras
-
-        atext = [para for para in atext if isinstance(para, str)]
-        abstract["text"] += "\n\n".join(atext)
-
-        if len(abstract.get("text", "")) >= 1:
             abstracts.append(abstract)
 
         return abstracts
