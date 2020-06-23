@@ -374,6 +374,12 @@ class JatsArticle:
         try:
             doi_path = node[0].split("/")
             pdict['id'] = doi_path[-1]
+
+            if self.pubtype == JATS_SPRINGER_PUBTYPE.print.value:
+                pdict['id'] += "-p"
+            elif self.pubtype == JATS_SPRINGER_PUBTYPE.electronic.value:
+                pdict['id'] += "-e"
+
             return pdict
         except (IndexError, ValueError):
             logger.error("primary_id: no doi")
@@ -383,6 +389,11 @@ class JatsArticle:
 
         try:
             pdict['id'] = node[0]
+
+            if self.pubtype == JATS_SPRINGER_PUBTYPE.print.value:
+                pdict['id'] += "-p"
+            elif self.pubtype == JATS_SPRINGER_PUBTYPE.electronic.value:
+                pdict['id'] += "-e"
         except IndexError:
             logger.error("no primary_id")
 
