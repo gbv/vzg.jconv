@@ -93,11 +93,15 @@ def getNameOfPerson(node):
     logger = logging.getLogger(__name__)
 
     person = {"fullname": ""}
+    name_node = None
 
     if node.find("name"):
         name_node = node.find("name")
     elif node.find("name-alternatives"):
         name_node = node.xpath("name-alternatives/name")[0]
+
+    if name_node is None:
+        return person
 
     try:
         person["firstname"] = name_node.xpath("given-names/text()")[0].strip()
