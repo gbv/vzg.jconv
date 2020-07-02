@@ -19,6 +19,7 @@ from vzg.jconv.gapi import JATS_SPRINGER_AUTHORTYPE
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 from vzg.jconv.gapi import JATS_SPRINGER_JOURNALTYPE
 from vzg.jconv.langcode import ISO_639
+from vzg.jconv.publisher import getPublisherId
 from vzg.jconv.utils import node2text
 from lxml import etree
 import logging
@@ -366,10 +367,17 @@ class JatsArticle:
         """
         logger = logging.getLogger(__name__)
 
+        pdict = {"type": "", "id": ""}
+
+        expression = JATS_XPATHS["publisher-name"]
+        node = self.xpath(expression)
+        try:
+            pdict['type'] = getPublisherId(node[0].strip())
+        except IndexError:
+            logger.error("no publisher name")
+
         expression = JATS_XPATHS["other_ids_doi"]
         node = self.xpath(expression)
-
-        pdict = {"type": "SPRINGER", "id": ""}
 
         try:
             doi_path = node[0].split("/")

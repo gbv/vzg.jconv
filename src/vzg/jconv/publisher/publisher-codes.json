@@ -1,0 +1,12 @@
+{
+    "Springer Berlin Heidelberg": {
+        "operator": "regex",
+        "pattern": "Springer",
+        "value": "SPRINGER"
+    },
+    "Emerald Publishing Limited": {
+        "operator": "regex",
+        "pattern": "Emerald",
+        "value": "EMERALD"
+    }
+}
