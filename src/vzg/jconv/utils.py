@@ -13,6 +13,7 @@
 from lxml import etree
 import re
 from vzg.jconv.gapi import NAMESPACES
+import logging
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = 'plaintext'
@@ -85,3 +86,33 @@ def node2text(node):
         nodetext = nodetext.replace(c_, '')
 
     return nodetext
+
+
+def getNameOfPerson(node):
+    """Extract a persons name"""
+    logger = logging.getLogger(__name__)
+
+    person = {"fullname": ""}
+
+    if node.find("name"):
+        name_node = node.find("name")
+    elif node.find("name-alternatives"):
+        name_node = node.xpath("name-alternatives/name")[0]
+
+    try:
+        person["firstname"] = name_node.xpath("given-names/text()")[0].strip()
+        person["fullname"] = person["firstname"]
+    except IndexError:
+        msg = "no firstname"
+        logger.error(msg)
+
+    try:
+        person["lastname"] = name_node.xpath("surname/text()")[0].strip()
+        person["fullname"] += f""" {person["lastname"]}"""
+    except IndexError:
+        msg = "no lastname"
+        logger.error(msg)
+
+    logger.debug(person)
+
+    return person

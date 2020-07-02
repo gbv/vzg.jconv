@@ -31,15 +31,18 @@ PUBIDS = {}
 
 for checkname, checkdata in __jdata__.items():
     logger.debug(checkname)
+
     if checkdata["operator"] == "regex":
         checkdata["compiled"] = re.compile(checkdata["pattern"])
+
+    PUBIDS[checkname] = checkdata
 
 
 def getPublisherId(publisher):
     """"""
     logger = logging.getLogger(__name__)
 
-    for checkname, checkdata in __jdata__.items():
+    for checkname, checkdata in PUBIDS.items():
         logger.debug(checkname)
         if checkdata["operator"] == "regex":
             if checkdata["compiled"].match(publisher):

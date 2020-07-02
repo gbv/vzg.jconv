@@ -271,6 +271,8 @@ class JatsArticle:
     @property
     def persons(self):
         """Article persons"""
+        from vzg.jconv.utils import getNameOfPerson
+
         logger = logging.getLogger(__name__)
 
         persons = []
@@ -279,21 +281,7 @@ class JatsArticle:
         nodes = self.xpath(expression)
 
         for elem in nodes:
-            person = {"fullname": ""}
-
-            try:
-                person["firstname"] = elem.xpath("name/given-names/text()")[0].strip()
-                person["fullname"] = person["firstname"]
-            except IndexError:
-                msg = "no firstname"
-                logger.error(msg)
-
-            try:
-                person["lastname"] = elem.xpath("name/surname/text()")[0].strip()
-                person["fullname"] += f""" {person["lastname"]}"""
-            except IndexError:
-                msg = "no lastname"
-                logger.error(msg)
+            person = getNameOfPerson(elem)
 
             if len(person["fullname"]) == 0:
                 msg = "no fullname"
@@ -306,53 +294,68 @@ class JatsArticle:
             except KeyError:
                 msg = "unknown authortype"
                 logger.error(msg)
-                continue
 
-            try:
-                affiliation = elem.xpath("""xref[@ref-type="aff"]""")[0]
-            except IndexError:
-                msg = "no affiliation"
-                logger.error(msg)
-                continue
+            def aff_():
+                affdict = {}
 
-            rid = affiliation.get("rid")
+                try:
+                    affiliation = elem.xpath("""xref[@ref-type="aff"]""")[0]
+                except IndexError:
+                    msg = "no affiliation"
+                    logger.error(msg)
+                    return None
 
-            if isinstance(rid, type(None)):
-                msg = "no affiliation"
-                logger.error(msg)
-                continue
+                rid = affiliation.get("rid")
 
-            aff_expression = JATS_XPATHS["affiliation"].format(rid=rid)
+                if isinstance(rid, type(None)):
+                    msg = "no affiliation"
+                    logger.error(msg)
+                    return None
 
-            try:
-                affnode = self.xpath(aff_expression)[0]
-            except IndexError:
-                msg = "no affiliation"
-                logger.error(msg)
-                continue
+                aff_expression = JATS_XPATHS["affiliation"].format(rid=rid)
 
-            affdict = {}
+                try:
+                    affnode = self.xpath(aff_expression)[0]
+                except IndexError:
+                    msg = "no affiliation"
+                    logger.error(msg)
+                    return None
 
-            try:
-                affdict['name'] = affnode.xpath(
-                    """institution-wrap/institution[@content-type="org-name"]/text()""")[0].strip()
-            except IndexError:
-                msg = "no affiliation name"
-                logger.error(msg)
+                if affnode.find("institution-wrap"):
+                    inode = affnode.find("institution-wrap")
 
-            affids = []
+                    try:
+                        affdict['name'] = inode.xpath(
+                            """institution[@content-type="org-name"]/text()""")[0].strip()
+                    except IndexError:
+                        msg = "no affiliation name"
+                        logger.error(msg)
 
-            for affid in affnode.xpath("""institution-wrap/institution-id"""):
-                affiddict = {}
+                    try:
+                        affdict['name'] = inode.xpath(
+                            """institution/text()""")[0].strip()
+                    except IndexError:
+                        msg = "no affiliation name"
+                        logger.error(msg)
 
-                affiddict['type'] = affid.get("institution-id-type")
-                affiddict['id'] = affid.text
+                    affids = []
 
-                affids.append(affiddict)
+                    for affid in inode.xpath("""institution-id"""):
+                        affiddict = {}
 
-            affdict["affiliation_ids"] = affids
+                        affiddict['type'] = affid.get("institution-id-type")
+                        affiddict['id'] = affid.text
 
-            person["affiliation"] = affdict
+                        affids.append(affiddict)
+
+                    affdict["affiliation_ids"] = affids
+
+                return affdict
+
+            affdict = aff_()
+
+            if isinstance(affdict, dict):
+                person["affiliation"] = affdict
 
             persons.append(person)
 
