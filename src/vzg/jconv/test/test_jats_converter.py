@@ -34,6 +34,7 @@ class TestCase(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
         self.fpath = Path("article.xml")
+        self.fpaths = {"emerald": Path("article_emerald.xml")}
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -77,7 +78,21 @@ class TestCase(unittest.TestCase):
 
         for article in jconv.articles:
             self.assertIsInstance(article, JatsArticle, "article")
-            # print(article.json)
+            # pprint(article.json)
+
+    def test05(self):
+        """validate emerald"""
+        jconv = JatsConverter(self.fpaths["emerald"], validate=True)
+
+        self.assertTrue(len(jconv.articles) == 0, "articles")
+
+        jconv.run()
+
+        self.assertTrue(len(jconv.articles) == 1, "articles")
+
+        for article in jconv.articles:
+            self.assertIsInstance(article, JatsArticle, "article")
+            print(article.json)
 
 
 if __name__ == '__main__':

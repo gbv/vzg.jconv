@@ -328,7 +328,7 @@ class JatsArticle:
                         affdict['name'] = inode.xpath(
                             """institution[@content-type="org-name"]/text()""")[0].strip()
                     except IndexError:
-                        msg = "no affiliation name"
+                        msg = "no affiliation name (org-name)"
                         logger.error(msg)
 
                     try:
@@ -415,39 +415,55 @@ class JatsArticle:
         """Article subject_terms"""
         logger = logging.getLogger(__name__)
 
-        attributes = self.xpath(JATS_XPATHS["subjects-lang_code"])
         subjects = []
-        lang_code = ""
 
-        try:
-            lang_code = self.iso639.i1toi2[attributes[0]]
-        except IndexError:
-            logger.error("no lang_code")
-            return []
-        except KeyError:
-            logger.error("no lang_code")
-            return []
+        def form_():
+            """"""
+            attributes = self.xpath(JATS_XPATHS["subjects-lang_code"])
 
-        subject = {'scheme': "form", "terms": [], "lang_code": lang_code}
+            subject = {'scheme': "form", "terms": [], "lang_code": ""}
 
-        for node in self.xpath(JATS_XPATHS["article-custom-meta"]):
-            if node.text == "article-type":
-                pnode = node.getparent()
-                subject["terms"].append(pnode.find('meta-value').text)
-                break
+            try:
+                subject["lang_code"] = self.iso639.i1toi2[attributes[0]]
+            except IndexError:
+                logger.error("no lang_code")
+                return subject
+            except KeyError:
+                logger.error("no lang_code")
+                return subject
+
+            for node in self.xpath(JATS_XPATHS["article-custom-meta"]):
+                if node.text == "article-type":
+                    pnode = node.getparent()
+                    subject["terms"].append(pnode.find('meta-value').text)
+                    break
+
+            return subject
+
+        # Most likely publisher specific
+        subject = form_()
 
         if len(subject["lang_code"]) > 0 and len(subject["terms"]) > 0:
             subjects.append(subject)
-
-        subject = {'scheme': "group", "terms": [], "lang_code": lang_code}
 
         expression = JATS_XPATHS["subjects"]
         subjext_exp = ".//kwd/text()"
         scheme_exp = ".//title"
 
         for groupnode in self.xpath(expression):
+            title = groupnode.attrib.get("kwd-group-type", None)
+
             try:
                 title = node2text(groupnode.xpath(scheme_exp)[0])
+            except IndexError:
+                pass
+
+            if title is None:
+                continue
+
+            try:
+                lang_code = self.iso639.i1toi2[groupnode.xpath(
+                    "@xml:lang", namespaces=NAMESPACES)[0]]
             except IndexError:
                 continue
 
