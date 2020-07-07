@@ -496,7 +496,9 @@ class JatsArticle:
             for node in groupnode.xpath(subjext_exp):
                 subject["terms"].append(node)
 
-            if len(subject["lang_code"]) > 0 and len(subject["terms"]) > 0:
+            if len(subject["lang_code"]) > 0 \
+                    and len(subject["scheme"]) > 0 \
+                    and len(subject["terms"]) > 0:
                 subjects.append(subject)
 
         return subjects
