@@ -36,7 +36,7 @@ setup(
         "License :: OSI Approved :: GNU Affero General Public License v3", ],
     url='https://github.com/gbv/vzg.jconv',
     project_urls={
-        #        'PyPI': 'https://pypi.python.org/pypi/vzg.jconv',
+        'PyPI': 'https://pypi.python.org/pypi/vzg.jconv',
         'Source': 'https://github.com/gbv/vzg.jconv',
         'Tracker': 'https://github.com/gbv/vzg.jconv/issues',
     },
