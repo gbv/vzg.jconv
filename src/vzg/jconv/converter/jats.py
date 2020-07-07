@@ -113,6 +113,9 @@ class JatsArticle:
             atext = [para for para in atext if isinstance(para, str)]
             abstract["text"] += "\n\n".join(atext)
 
+            if len(abstract["text"]) == 0:
+                continue
+
             abstracts.append(abstract)
 
         return abstracts
