@@ -295,9 +295,7 @@ class JatsArticle:
         for elem in nodes:
             person = getNameOfPerson(elem)
 
-            if len(person["fullname"]) == 0:
-                msg = "no fullname"
-                logger.error(msg)
+            if person is None:
                 continue
 
             try:
@@ -308,7 +306,7 @@ class JatsArticle:
                 logger.error(msg)
 
             def aff_():
-                affdict = {}
+                affdict = {"name": ""}
 
                 try:
                     affiliation = elem.xpath("""xref[@ref-type="aff"]""")[0]
@@ -349,6 +347,9 @@ class JatsArticle:
                     except IndexError:
                         msg = "no affiliation name"
                         logger.error(msg)
+
+                    if len(affdict['name']) == 0:
+                        return None
 
                     affids = []
 

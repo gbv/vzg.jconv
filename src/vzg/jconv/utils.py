@@ -92,7 +92,10 @@ def getNameOfPerson(node):
     """Extract a persons name"""
     logger = logging.getLogger(__name__)
 
-    person = {"fullname": ""}
+    person = {"firstname": "",
+              "lastname": "",
+              "fullname": ""}
+
     name_node = None
 
     if node.find("name"):
@@ -118,5 +121,11 @@ def getNameOfPerson(node):
         logger.error(msg)
 
     logger.debug(person)
+
+    for key, value in person.items():
+        if len(value) == 0:
+            msg = f"no {key}"
+            logger.error(msg)
+            return None
 
     return person
