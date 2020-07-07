@@ -104,7 +104,7 @@ def getNameOfPerson(node):
         name_node = node.xpath("name-alternatives/name")[0]
 
     if name_node is None:
-        return person
+        return None
 
     try:
         person["firstname"] = name_node.xpath("given-names/text()")[0].strip()

@@ -306,7 +306,7 @@ class JatsArticle:
                 logger.error(msg)
 
             def aff_():
-                affdict = {"name": ""}
+                affdict_ = {}
 
                 try:
                     affiliation = elem.xpath("""xref[@ref-type="aff"]""")[0]
@@ -333,22 +333,23 @@ class JatsArticle:
 
                 if affnode.find("institution-wrap"):
                     inode = affnode.find("institution-wrap")
+                    affdict_['name'] = ""
 
                     try:
-                        affdict['name'] = inode.xpath(
+                        affdict_['name'] = inode.xpath(
                             """institution[@content-type="org-name"]/text()""")[0].strip()
                     except IndexError:
                         msg = "no affiliation name (org-name)"
                         logger.error(msg)
 
                     try:
-                        affdict['name'] = inode.xpath(
+                        affdict_['name'] = inode.xpath(
                             """institution/text()""")[0].strip()
                     except IndexError:
                         msg = "no affiliation name"
                         logger.error(msg)
 
-                    if len(affdict['name']) == 0:
+                    if len(affdict_['name'].strip()) == 0:
                         return None
 
                     affids = []
@@ -361,9 +362,9 @@ class JatsArticle:
 
                         affids.append(affiddict)
 
-                    affdict["affiliation_ids"] = affids
+                    affdict_["affiliation_ids"] = affids
 
-                return affdict
+                    return affdict_
 
             affdict = aff_()
 
