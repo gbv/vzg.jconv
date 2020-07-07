@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""Pubisjer Ids
+"""Pubisher Ids
 
 https://opus.k10plus.de/frontdoor/deliver/index/docId/419/file/K10plus_Tabelle_2113.pdf
 
@@ -16,6 +16,7 @@ import json
 from pathlib import Path
 import re
 import logging
+from vzg.jconv.errors import NoPublisherError
 
 __author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
 __docformat__ = 'plaintext'
@@ -47,3 +48,5 @@ def getPublisherId(publisher):
         if checkdata["operator"] == "regex":
             if checkdata["compiled"].match(publisher):
                 return checkdata["value"]
+
+    raise NoPublisherError(publisher)

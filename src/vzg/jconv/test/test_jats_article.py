@@ -183,6 +183,44 @@ class PPubArticle(unittest.TestCase):
                          "subject_terms")
 
 
+class EPubArticlePublisher(unittest.TestCase):
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+
+        self.fpath = Path("article.xml")
+        self.jpath = Path("article_epub_publisher.json")
+
+        with open(self.jpath) as fh:
+            self.testdata = json.load(fh)
+
+        with open(self.fpath, 'rb') as fh:
+            self.dom = etree.parse(fh)
+
+        self.jobj = JatsArticle(self.dom,
+                                JATS_SPRINGER_PUBTYPE.electronic.value,
+                                publisher="Emerald")
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+
+    def test01(self):
+        """title"""
+        self.assertEqual(self.jobj.title, self.testdata['title'], "title")
+
+    def test02(self):
+        """lang_code"""
+        self.assertEqual(self.jobj.lang_code,
+                         self.testdata['lang_code'],
+                         "lang_code")
+
+    def test03(self):
+        """primary_id"""
+        self.assertEqual(self.jobj.primary_id,
+                         self.testdata['primary_id'],
+                         "primary_id")
+
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(EPubArticle))

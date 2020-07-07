@@ -20,6 +20,7 @@ from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 from vzg.jconv.gapi import JATS_SPRINGER_JOURNALTYPE
 from vzg.jconv.langcode import ISO_639
 from vzg.jconv.publisher import getPublisherId
+from vzg.jconv.errors import NoPublisherError
 from vzg.jconv.utils import node2text
 from lxml import etree
 import logging
@@ -71,15 +72,23 @@ class JatsArticle:
 
     iso639 : vzg.jconv.langcode.ISO_639
 
+    publisher : string
+        Set or override the publisher entry
+
     Returns
     -------
     None
     """
 
-    def __init__(self, dom, pubtype, iso639=None):
+    def __init__(self,
+                 dom,
+                 pubtype,
+                 iso639=None,
+                 publisher=None):
         self.dom = dom
         self.iso639 = ISO_639() if isinstance(iso639, type(None)) else iso639
         self.pubtype = pubtype
+        self.publisher = publisher
 
     @property
     def abstracts(self):
@@ -375,12 +384,20 @@ class JatsArticle:
 
         pdict = {"type": "", "id": ""}
 
-        expression = JATS_XPATHS["publisher-name"]
-        node = self.xpath(expression)
+        publisher = self.publisher
+
+        if publisher is None:
+            expression = JATS_XPATHS["publisher-name"]
+            node = self.xpath(expression)
+            try:
+                publisher = node[0].strip()
+            except IndexError:
+                logger.error("no publisher name")
+
         try:
-            pdict['type'] = getPublisherId(node[0].strip())
-        except IndexError:
-            logger.error("no publisher name")
+            pdict['type'] = getPublisherId(publisher)
+        except NoPublisherError:
+            logger.error("no publisher", exc_info=True)
 
         expression = JATS_XPATHS["other_ids_doi"]
         node = self.xpath(expression)
@@ -545,6 +562,9 @@ class JatsConverter:
         Path object with the JATS XML file
     iso639 : vzg.jconv.langcode.ISO_639
 
+    publisher : string
+        Set or override the publisher entry
+
     validate : bool
         Validate each IArticle
     Returns
@@ -567,9 +587,14 @@ class JatsConverter:
     []
     """
 
-    def __init__(self, jatspath, iso639=None, validate=False):
+    def __init__(self,
+                 jatspath,
+                 iso639=None,
+                 publisher=None,
+                 validate=False):
         self.jatspath = jatspath
         self.articles = []
+        self.publisher = publisher
 
         if not self.jatspath.is_file():
             raise OSError
@@ -608,7 +633,8 @@ class JatsConverter:
         for pubtype in self.pubtypes:
             article = JatsArticle(self.dom,
                                   pubtype.value,
-                                  self.iso639)
+                                  self.iso639,
+                                  self.publisher)
 
             if self.validate:
                 try:
