@@ -22,6 +22,7 @@ from vzg.jconv.langcode import ISO_639
 from vzg.jconv.publisher import getPublisherId
 from vzg.jconv.errors import NoPublisherError
 from vzg.jconv.utils import node2text
+from vzg.jconv.utils.date import JatsDate
 from lxml import etree
 import logging
 import json
@@ -180,18 +181,42 @@ class JatsArticle:
         except IndexError:
             logger.error("no journal title")
 
+        # Look for the earliest date
+        date_node = None
+
+        for pubtype in JATS_SPRINGER_PUBTYPE:
+            expression = JATS_XPATHS["pub-date"].format(pubtype=pubtype.value)
+            node = self.xpath(expression)
+
+            if len(node) > 0:
+                dnode = JatsDate(node[0])
+
+                if isinstance(date_node, JatsDate):
+                    if dnode.todate() < date_node.todate():
+                        date_node = dnode
+                else:
+                    date_node = dnode
+
+        if isinstance(date_node.month, int):
+            pdict["month"] = f"{date_node.month:02}"
+            if isinstance(date_node.day, int):
+                pdict["day"] = f"{date_node.day:02}"
+
+        if isinstance(date_node.year, int):
+            pdict["year"] = f"{date_node.year}"
+
         expression = JATS_XPATHS["pub-date"].format(pubtype=self.pubtype)
         node = self.xpath(expression)
 
-        dfmt = {"day": "{0:02}", "month": "{0:02}", "year": "{0}"}
-        for dentry in dfmt:
-            try:
-                xepr = f"{dentry}/text()"
-                val = int(node[0].xpath(xepr)[0])
-                pdict[dentry] = dfmt[dentry].format(val)
-            except IndexError:
-                msg = f"no journal {dentry}"
-                logger.error(msg)
+        # dfmt = {"day": "{0:02}", "month": "{0:02}", "year": "{0}"}
+        # for dentry in dfmt:
+        #     try:
+        #         xepr = f"{dentry}/text()"
+        #         val = int(node[0].xpath(xepr)[0])
+        #         pdict[dentry] = dfmt[dentry].format(val)
+        #     except IndexError:
+        #         msg = f"no journal {dentry}"
+        #         logger.error(msg)
 
         for jtype, expression in jids.items():
             node = self.xpath(expression)
