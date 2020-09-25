@@ -106,6 +106,12 @@ class EPubArticle(unittest.TestCase):
                          self.testdata['subject_terms'],
                          "subject_terms")
 
+    def test11(self):
+        """dateOfProduction"""
+        self.assertNotIn("dateOfProduction",
+                         self.jobj.jdict,
+                         "dateOfProduction")
+
 
 class PPubArticle(unittest.TestCase):
 
@@ -181,6 +187,12 @@ class PPubArticle(unittest.TestCase):
         self.assertEqual(self.jobj.subjects,
                          self.testdata['subject_terms'],
                          "subject_terms")
+
+    def test11(self):
+        """dateOfProduction"""
+        self.assertEqual(str(self.jobj.dateOfProduction),
+                         self.testdata['dateOfProduction'],
+                         "dateOfProduction")
 
 
 class EPubArticlePublisher(unittest.TestCase):

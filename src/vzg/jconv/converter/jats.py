@@ -146,6 +146,19 @@ class JatsArticle:
         return copyr
 
     @property
+    def dateOfProduction(self):
+        """Article dateOfProduction"""
+        expression = JATS_XPATHS["pub-date"].format(pubtype=self.pubtype)
+        node = self.xpath(expression)
+
+        if len(node) == 0:
+            return None
+
+        dateOfProduction = JatsDate(node[0])
+
+        return dateOfProduction
+
+    @property
     def lang_code(self):
         """Article lang_code"""
         logger = logging.getLogger(__name__)
@@ -160,6 +173,26 @@ class JatsArticle:
             logger.error("no lang_code")
 
         return lcode
+
+    @property
+    def journal_date(self):
+        """Look for the earliest date"""
+        date_node = None
+
+        for pubtype in JATS_SPRINGER_PUBTYPE:
+            expression = JATS_XPATHS["pub-date"].format(pubtype=pubtype.value)
+            node = self.xpath(expression)
+
+            if len(node) > 0:
+                dnode = JatsDate(node[0])
+
+                if isinstance(date_node, JatsDate):
+                    if dnode.todate() < date_node.todate():
+                        date_node = dnode
+                else:
+                    date_node = dnode
+
+        return date_node
 
     @property
     def journal(self):
@@ -181,21 +214,7 @@ class JatsArticle:
         except IndexError:
             logger.error("no journal title")
 
-        # Look for the earliest date
-        date_node = None
-
-        for pubtype in JATS_SPRINGER_PUBTYPE:
-            expression = JATS_XPATHS["pub-date"].format(pubtype=pubtype.value)
-            node = self.xpath(expression)
-
-            if len(node) > 0:
-                dnode = JatsDate(node[0])
-
-                if isinstance(date_node, JatsDate):
-                    if dnode.todate() < date_node.todate():
-                        date_node = dnode
-                else:
-                    date_node = dnode
+        date_node = self.journal_date
 
         if isinstance(date_node.month, int):
             pdict["month"] = f"{date_node.month:02}"
@@ -204,19 +223,6 @@ class JatsArticle:
 
         if isinstance(date_node.year, int):
             pdict["year"] = f"{date_node.year}"
-
-        expression = JATS_XPATHS["pub-date"].format(pubtype=self.pubtype)
-        node = self.xpath(expression)
-
-        # dfmt = {"day": "{0:02}", "month": "{0:02}", "year": "{0}"}
-        # for dentry in dfmt:
-        #     try:
-        #         xepr = f"{dentry}/text()"
-        #         val = int(node[0].xpath(xepr)[0])
-        #         pdict[dentry] = dfmt[dentry].format(val)
-        #     except IndexError:
-        #         msg = f"no journal {dentry}"
-        #         logger.error(msg)
 
         for jtype, expression in jids.items():
             node = self.xpath(expression)
@@ -280,17 +286,22 @@ class JatsArticle:
                  "subject_terms": self.subjects,
                  "title": self.title}
 
+        if isinstance(self.dateOfProduction, JatsDate) \
+                and isinstance(self.journal_date, JatsDate):
+            if self.dateOfProduction.todate() != self.journal_date.todate():
+                jdict["dateOfProduction"] = str(self.dateOfProduction)
+
         if self.pubtype == JATS_SPRINGER_PUBTYPE.electronic.value:
             jdict['urls'] = self.urls
 
         return jdict
 
-    @property
+    @ property
     def json(self):
         """"""
         return json.dumps(self.jdict)
 
-    @property
+    @ property
     def other_ids(self):
         """Article other_ids"""
         logger = logging.getLogger(__name__)
@@ -305,7 +316,7 @@ class JatsArticle:
 
         return [pdict]
 
-    @property
+    @ property
     def persons(self):
         """Article persons"""
         from vzg.jconv.utils import getNameOfPerson
@@ -400,7 +411,7 @@ class JatsArticle:
 
         return persons
 
-    @property
+    @ property
     def primary_id(self):
         """Article primary_id
 
@@ -457,7 +468,7 @@ class JatsArticle:
 
         return pdict
 
-    @property
+    @ property
     def subjects(self):
         """Article subject_terms"""
         logger = logging.getLogger(__name__)
@@ -528,7 +539,7 @@ class JatsArticle:
 
         return subjects
 
-    @property
+    @ property
     def title(self):
         """Article title"""
         logger = logging.getLogger(__name__)
@@ -543,7 +554,7 @@ class JatsArticle:
 
         return node2text(node)
 
-    @property
+    @ property
     def urls(self):
         """Article URLs"""
         logger = logging.getLogger(__name__)
@@ -581,7 +592,7 @@ class JatsArticle:
         return self.dom.xpath(expression, namespaces=NAMESPACES)
 
 
-@implementer(IConverter)
+@ implementer(IConverter)
 class JatsConverter:
     """Convert a JATS XML File to JSON Objects
 
@@ -636,7 +647,7 @@ class JatsConverter:
         self.validate = validate
         self.validation_failed = False
 
-    @property
+    @ property
     def pubtypes(self):
         """Try to guess the formats of publication.
 
