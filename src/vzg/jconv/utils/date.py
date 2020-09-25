@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""Beschreibung
+"""Date utils
 
 ##############################################################################
 #
@@ -26,12 +26,12 @@ class JatsDate:
         """"""
         dstr = ""
 
-        if isinstance(self.month, int):
-            if isinstance(self.day, int):
-                dstr += f"{self.day:02}-"
-            dstr += f"{self.month:02}-"
-
-        dstr += f"{self.year}"
+        if isinstance(self.year, int):
+            dstr += f"{self.year}"
+            if isinstance(self.month, int):
+                dstr += f"-{self.month:02}"
+                if isinstance(self.day, int):
+                    dstr += f"-{self.day:02}"
 
         return dstr
 
