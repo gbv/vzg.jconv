@@ -367,7 +367,7 @@ class JatsArticle:
                     logger.error(msg)
                     return None
 
-                if affnode.find("institution-wrap"):
+                if isinstance(affnode.find("institution-wrap"), etree._Element):
                     inode = affnode.find("institution-wrap")
                     affdict_['name'] = ""
 

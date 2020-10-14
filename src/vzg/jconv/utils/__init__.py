@@ -19,7 +19,7 @@ __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = 'plaintext'
 
 # TeX formular
-TEXREX = re.compile("(\${1,2}.*\${1,2})")
+TEXREX = re.compile(r"(\${1,2}.*\${1,2})")
 # Upper case greek letters within a formula
 GREEX = re.compile(r"\\up(\w+)")
 # Subscript
@@ -98,9 +98,9 @@ def getNameOfPerson(node):
 
     name_node = None
 
-    if node.find("name"):
+    if isinstance(node.find("name"), etree._Element):
         name_node = node.find("name")
-    elif node.find("name-alternatives"):
+    elif isinstance(node.find("name-alternatives"), etree._Element):
         name_node = node.xpath("name-alternatives/name")[0]
 
     if name_node is None:
