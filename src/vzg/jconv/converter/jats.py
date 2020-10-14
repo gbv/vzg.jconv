@@ -296,12 +296,12 @@ class JatsArticle:
 
         return jdict
 
-    @ property
+    @property
     def json(self):
         """"""
         return json.dumps(self.jdict)
 
-    @ property
+    @property
     def other_ids(self):
         """Article other_ids"""
         logger = logging.getLogger(__name__)
@@ -316,7 +316,7 @@ class JatsArticle:
 
         return [pdict]
 
-    @ property
+    @property
     def persons(self):
         """Article persons"""
         from vzg.jconv.utils import getNameOfPerson
@@ -411,7 +411,7 @@ class JatsArticle:
 
         return persons
 
-    @ property
+    @property
     def primary_id(self):
         """Article primary_id
 
@@ -468,7 +468,7 @@ class JatsArticle:
 
         return pdict
 
-    @ property
+    @property
     def subjects(self):
         """Article subject_terms"""
         logger = logging.getLogger(__name__)
@@ -539,7 +539,7 @@ class JatsArticle:
 
         return subjects
 
-    @ property
+    @property
     def title(self):
         """Article title"""
         logger = logging.getLogger(__name__)
@@ -554,7 +554,7 @@ class JatsArticle:
 
         return node2text(node)
 
-    @ property
+    @property
     def urls(self):
         """Article URLs"""
         logger = logging.getLogger(__name__)
@@ -592,7 +592,7 @@ class JatsArticle:
         return self.dom.xpath(expression, namespaces=NAMESPACES)
 
 
-@ implementer(IConverter)
+@implementer(IConverter)
 class JatsConverter:
     """Convert a JATS XML File to JSON Objects
 
@@ -647,7 +647,7 @@ class JatsConverter:
         self.validate = validate
         self.validation_failed = False
 
-    @ property
+    @property
     def pubtypes(self):
         """Try to guess the formats of publication.
 
