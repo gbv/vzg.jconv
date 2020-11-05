@@ -1,6 +1,2 @@
-try:
-    # Declare this a namespace package if pkg_resources is available.
-    import pkg_resources
-    pkg_resources.declare_namespace('vzg')
-except ImportError:
-    pass
+# -*- coding: UTF-8 -*-
+__import__('pkg_resources').declare_namespace(__name__)
