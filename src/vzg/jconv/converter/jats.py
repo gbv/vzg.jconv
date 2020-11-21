@@ -35,6 +35,7 @@ JATS_XPATHS = {}
 JATS_XPATHS["lang_code"] = "//article-meta/title-group/article-title/@xml:lang"
 JATS_XPATHS["journal-title"] = "//journal-meta/journal-title-group/journal-title/text()"
 JATS_XPATHS["pub-date"] = """//article-meta/pub-date[@date-type="{pubtype}"]"""
+JATS_XPATHS["pub-date-format"] = """//article-meta/pub-date[@publication-format="{pubtype}"]"""
 JATS_XPATHS["pub-date-year"] = JATS_XPATHS["pub-date"] + """/year/text()"""
 JATS_XPATHS["primary_id"] = """//article-meta/article-id[@pub-id-type="publisher-id"]/text()"""
 JATS_XPATHS["other_ids_doi"] = """//article-meta/article-id[@pub-id-type="doi"]/text()"""
@@ -148,7 +149,14 @@ class JatsArticle:
     @property
     def dateOfProduction(self):
         """Article dateOfProduction"""
-        expression = JATS_XPATHS["pub-date"].format(pubtype=self.pubtype)
+        expression = JATS_XPATHS["pub-date"].format(pubtype="pub")
+        nodes = self.dom.xpath(expression, namespaces=NAMESPACES)
+
+        if len(nodes) > 0:
+            expression = JATS_XPATHS["pub-date-format"].format(pubtype=self.pubtype.name)
+        else:
+            expression = JATS_XPATHS["pub-date"].format(pubtype=self.pubtype.value)
+    
         node = self.xpath(expression)
 
         if len(node) == 0:
@@ -177,11 +185,22 @@ class JatsArticle:
     @property
     def journal_date(self):
         """Look for the earliest date"""
+        logger = logging.getLogger(__name__)
+        
         date_node = None
 
+        expression = JATS_XPATHS["pub-date"].format(pubtype="pub")
+        nodes = self.dom.xpath(expression, namespaces=NAMESPACES)
+        basictype = (len(nodes) > 0)
+
         for pubtype in JATS_SPRINGER_PUBTYPE:
-            expression = JATS_XPATHS["pub-date"].format(pubtype=pubtype.value)
-            node = self.xpath(expression)
+            if basictype:
+                logger.debug("new pub")
+                expression = JATS_XPATHS["pub-date-format"].format(pubtype=pubtype.name)    
+            else:
+                expression = JATS_XPATHS["pub-date"].format(pubtype=pubtype.value)
+            
+            node = self.dom.xpath(expression, namespaces=NAMESPACES)
 
             if len(node) > 0:
                 dnode = JatsDate(node[0])
@@ -205,7 +224,7 @@ class JatsArticle:
 
         jids = {'springer': JATS_XPATHS["journal-id"].format(journaltype="publisher-id"),
                 'doi': JATS_XPATHS["journal-id"].format(journaltype="doi"),
-                self.pubtype: JATS_XPATHS["journal-issn"].format(pubtype=self.pubtype)}
+                self.pubtype.value: JATS_XPATHS["journal-issn"].format(pubtype=self.pubtype.value)}
 
         expression = JATS_XPATHS["journal-title"]
         node = self.xpath(expression)
@@ -228,7 +247,7 @@ class JatsArticle:
             node = self.xpath(expression)
 
             if len(node) == 0:
-                msg = f"no {jtype} journal_id ({self.pubtype})"
+                msg = f"no {jtype} journal_id ({self.pubtype.value})"
                 logger.error(msg)
                 continue
 
@@ -291,7 +310,7 @@ class JatsArticle:
             if self.dateOfProduction.todate() != self.journal_date.todate():
                 jdict["dateOfProduction"] = str(self.dateOfProduction)
 
-        if self.pubtype == JATS_SPRINGER_PUBTYPE.electronic.value:
+        if self.pubtype.value == JATS_SPRINGER_PUBTYPE.electronic.value:
             jdict['urls'] = self.urls
 
         return jdict
@@ -312,7 +331,7 @@ class JatsArticle:
         try:
             pdict['id'] = node[0]
         except IndexError:
-            logger.error(("no other_id (doi)", self.pubtype))
+            logger.error(("no other_id (doi)", self.pubtype.value))
 
         return [pdict]
 
@@ -444,9 +463,9 @@ class JatsArticle:
             doi_path = node[0].split("/")
             pdict['id'] = doi_path[-1]
 
-            if self.pubtype == JATS_SPRINGER_PUBTYPE.print.value:
+            if self.pubtype.value == JATS_SPRINGER_PUBTYPE.print.value:
                 pdict['id'] += "-p"
-            elif self.pubtype == JATS_SPRINGER_PUBTYPE.electronic.value:
+            elif self.pubtype.value == JATS_SPRINGER_PUBTYPE.electronic.value:
                 pdict['id'] += "-e"
 
             return pdict
@@ -459,9 +478,9 @@ class JatsArticle:
         try:
             pdict['id'] = node[0]
 
-            if self.pubtype == JATS_SPRINGER_PUBTYPE.print.value:
+            if self.pubtype.value == JATS_SPRINGER_PUBTYPE.print.value:
                 pdict['id'] += "-p"
-            elif self.pubtype == JATS_SPRINGER_PUBTYPE.electronic.value:
+            elif self.pubtype.value == JATS_SPRINGER_PUBTYPE.electronic.value:
                 pdict['id'] += "-e"
         except IndexError:
             logger.error("no primary_id")
@@ -655,14 +674,27 @@ class JatsConverter:
 
         Springer sets the date-type attribute to certain values
         """
+        logger = logging.getLogger(__name__)
+
         pubtypes = []
 
+        expression = JATS_XPATHS["pub-date"].format(pubtype="pub")
+        nodes = self.dom.xpath(expression, namespaces=NAMESPACES)
+        basictype = (len(nodes) > 0)
+
         for entry in JATS_SPRINGER_PUBTYPE:
-            expression = JATS_XPATHS["pub-date"].format(pubtype=entry.value)
+            if basictype:
+                logger.debug("new pub")
+                expression = JATS_XPATHS["pub-date-format"].format(pubtype=entry.name)
+            else:
+                expression = JATS_XPATHS["pub-date"].format(pubtype=entry.value)
+
             nodes = self.dom.xpath(expression, namespaces=NAMESPACES)
 
             if len(nodes) > 0:
                 pubtypes.append(entry)
+
+        logger.info(pubtypes)
 
         return pubtypes
 
@@ -672,7 +704,7 @@ class JatsConverter:
 
         for pubtype in self.pubtypes:
             article = JatsArticle(self.dom,
-                                  pubtype.value,
+                                  pubtype,
                                   self.iso639,
                                   self.publisher)
 
