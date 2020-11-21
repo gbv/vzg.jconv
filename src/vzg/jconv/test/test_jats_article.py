@@ -42,8 +42,7 @@ class EPubArticle(unittest.TestCase):
         with open(self.fpath, 'rb') as fh:
             self.dom = etree.parse(fh)
 
-        self.jobj = JatsArticle(
-            self.dom, JATS_SPRINGER_PUBTYPE.electronic.value)
+        self.jobj = JatsArticle(self.dom, JATS_SPRINGER_PUBTYPE.electronic)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -127,7 +126,7 @@ class PPubArticle(unittest.TestCase):
         with open(self.fpath, 'rb') as fh:
             self.dom = etree.parse(fh)
 
-        self.jobj = JatsArticle(self.dom, JATS_SPRINGER_PUBTYPE.print.value)
+        self.jobj = JatsArticle(self.dom, JATS_SPRINGER_PUBTYPE.print)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -210,7 +209,7 @@ class EPubArticlePublisher(unittest.TestCase):
             self.dom = etree.parse(fh)
 
         self.jobj = JatsArticle(self.dom,
-                                JATS_SPRINGER_PUBTYPE.electronic.value,
+                                JATS_SPRINGER_PUBTYPE.electronic,
                                 publisher="Emerald")
 
     def tearDown(self):
