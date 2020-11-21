@@ -99,7 +99,6 @@ class JatsArticle:
         logger = logging.getLogger(__name__)
 
         abstracts = []
-        abstract = {'text': ""}
         langkey = f"{{{NAMESPACES['xml']}}}lang"
 
         for node in self.xpath(JATS_XPATHS["abstracts"]):
@@ -113,13 +112,23 @@ class JatsArticle:
             except KeyError:
                 logger.error("abstracts: no lang_code")
 
-            for secnode in node.xpath(JATS_XPATHS["abstracts-sec-node"]):
-                nodes = secnode.xpath("title")
+            secnodes = node.xpath(JATS_XPATHS["abstracts-sec-node"])
+
+            if len(secnodes) == 0:
+                nodes = node.xpath("title")
                 if len(nodes) > 0:
                     atext.append(node2text(nodes[0]))
 
-                paras = [node2text(para) for para in secnode.xpath("p")]
+                paras = [node2text(para) for para in node.xpath("p")]
                 atext += paras
+            else:
+                for secnode in node.xpath(JATS_XPATHS["abstracts-sec-node"]):
+                    nodes = secnode.xpath("title")
+                    if len(nodes) > 0:
+                        atext.append(node2text(nodes[0]))
+
+                    paras = [node2text(para) for para in secnode.xpath("p")]
+                    atext += paras
 
             atext = [para for para in atext if isinstance(para, str)]
             abstract["text"] += "\n\n".join(atext)
