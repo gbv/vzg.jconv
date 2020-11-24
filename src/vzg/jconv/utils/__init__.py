@@ -111,21 +111,21 @@ def getNameOfPerson(node):
         person["fullname"] = person["firstname"]
     except IndexError:
         msg = "no firstname"
-        logger.error(msg)
+        logger.info(msg)
 
     try:
         person["lastname"] = name_node.xpath("surname/text()")[0].strip()
         person["fullname"] += f""" {person["lastname"]}"""
     except IndexError:
         msg = "no lastname"
-        logger.error(msg)
+        logger.info(msg)
 
     logger.debug(person)
 
     for key, value in person.items():
         if len(value) == 0:
             msg = f"no {key}"
-            logger.error(msg)
+            logger.info(msg)
             return None
 
     return person
