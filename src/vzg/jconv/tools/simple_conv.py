@@ -200,12 +200,13 @@ def run():
 
     logger = logging.getLogger()
 
+    loghandler = logging.StreamHandler()
+
     if len(options.logfile.strip()) > 0:
         lpath = Path(options.logfile.strip()).absolute()
-        fh = logging.FileHandler(lpath)
-        logger.addHandler(fh)
+        loghandler = logging.FileHandler(lpath)
 
-    logger.addHandler(logging.StreamHandler())
+    logger.addHandler(loghandler)
     logger.setLevel(logging.WARNING)
 
     if options.verbose:
