@@ -108,9 +108,9 @@ class JatsArticle:
             try:
                 abstract["lang_code"] = self.iso639.i1toi2[node.attrib[langkey]]
             except IndexError:
-                logger.error("abstracts: no lang_code")
+                logger.info("abstracts: no lang_code")
             except KeyError:
-                logger.error("abstracts: no lang_code")
+                logger.info("abstracts: no lang_code")
 
             secnodes = node.xpath(JATS_XPATHS["abstracts-sec-node"])
 
@@ -151,7 +151,7 @@ class JatsArticle:
         try:
             copyr = nodes[0].strip()
         except IndexError:
-            logger.error("no copyright")
+            logger.info("no copyright")
 
         return copyr
 
@@ -185,9 +185,9 @@ class JatsArticle:
         try:
             lcode.append(self.iso639.i1toi2[attributes[0]])
         except IndexError:
-            logger.error("no lang_code")
+            logger.info("no lang_code")
         except KeyError:
-            logger.error("no lang_code")
+            logger.info("no lang_code")
 
         return lcode
 
@@ -240,7 +240,7 @@ class JatsArticle:
         try:
             pdict['title'] = node[0].strip()
         except IndexError:
-            logger.error("no journal title")
+            logger.info("no journal title")
 
         date_node = self.journal_date
 
@@ -257,7 +257,7 @@ class JatsArticle:
 
             if len(node) == 0:
                 msg = f"no {jtype} journal_id ({self.pubtype.value})"
-                logger.error(msg)
+                logger.info(msg)
                 continue
 
             jid = {'type': jtype, 'id': node[0]}
@@ -274,14 +274,14 @@ class JatsArticle:
         try:
             publisher['name'] = node[0].strip()
         except IndexError:
-            logger.error("no publisher name")
+            logger.info("no publisher name")
 
         expression = JATS_XPATHS["publisher-place"]
         node = self.xpath(expression)
         try:
             publisher['place'] = node[0].strip()
         except IndexError:
-            logger.error("no publisher place")
+            logger.info("no publisher place")
 
         if len(publisher) > 0:
             pdict["publisher"] = publisher
@@ -297,7 +297,7 @@ class JatsArticle:
             try:
                 pdict[attr] = node[0]
             except IndexError:
-                logger.error(f"no journal {attr}")
+                logger.info(f"no journal {attr}")
 
         return pdict
 
@@ -340,7 +340,7 @@ class JatsArticle:
         try:
             pdict['id'] = node[0]
         except IndexError:
-            logger.error(("no other_id (doi)", self.pubtype.value))
+            logger.info(("no other_id (doi)", self.pubtype.value))
 
         return [pdict]
 
@@ -367,7 +367,7 @@ class JatsArticle:
                     "contrib-type")].value
             except KeyError:
                 msg = "unknown authortype"
-                logger.error(msg)
+                logger.info(msg)
 
             def aff_():
                 affdict_ = {}
@@ -376,14 +376,14 @@ class JatsArticle:
                     affiliation = elem.xpath("""xref[@ref-type="aff"]""")[0]
                 except IndexError:
                     msg = "no affiliation"
-                    logger.error(msg)
+                    logger.info(msg)
                     return None
 
                 rid = affiliation.get("rid")
 
                 if isinstance(rid, type(None)):
                     msg = "no affiliation"
-                    logger.error(msg)
+                    logger.info(msg)
                     return None
 
                 aff_expression = JATS_XPATHS["affiliation"].format(rid=rid)
@@ -392,7 +392,7 @@ class JatsArticle:
                     affnode = self.xpath(aff_expression)[0]
                 except IndexError:
                     msg = "no affiliation"
-                    logger.error(msg)
+                    logger.info(msg)
                     return None
 
                 if isinstance(affnode.find("institution-wrap"), etree._Element):
@@ -404,14 +404,14 @@ class JatsArticle:
                             """institution[@content-type="org-name"]/text()""")[0].strip()
                     except IndexError:
                         msg = "no affiliation name (org-name)"
-                        logger.error(msg)
+                        logger.info(msg)
 
                     try:
                         affdict_['name'] = inode.xpath(
                             """institution/text()""")[0].strip()
                     except IndexError:
                         msg = "no affiliation name"
-                        logger.error(msg)
+                        logger.info(msg)
 
                     if len(affdict_['name'].strip()) == 0:
                         return None
@@ -458,12 +458,12 @@ class JatsArticle:
             try:
                 publisher = node[0].strip()
             except IndexError:
-                logger.error("no publisher name")
+                logger.info("no publisher name")
 
         try:
             pdict['type'] = getPublisherId(publisher)
         except NoPublisherError:
-            logger.error("no publisher", exc_info=True)
+            logger.info("no publisher", exc_info=True)
 
         expression = JATS_XPATHS["other_ids_doi"]
         node = self.xpath(expression)
@@ -479,7 +479,7 @@ class JatsArticle:
 
             return pdict
         except (IndexError, ValueError):
-            logger.error("primary_id: no doi")
+            logger.info("primary_id: no doi")
 
         expression = JATS_XPATHS["primary_id"]
         node = self.xpath(expression)
@@ -492,7 +492,7 @@ class JatsArticle:
             elif self.pubtype.value == JATS_SPRINGER_PUBTYPE.electronic.value:
                 pdict['id'] += "-e"
         except IndexError:
-            logger.error("no primary_id")
+            logger.info("no primary_id")
 
         return pdict
 
@@ -512,10 +512,10 @@ class JatsArticle:
             try:
                 subject["lang_code"] = self.iso639.i1toi2[attributes[0]]
             except IndexError:
-                logger.error("no lang_code")
+                logger.info("no lang_code")
                 return subject
             except KeyError:
-                logger.error("no lang_code")
+                logger.info("no lang_code")
                 return subject
 
             for node in self.xpath(JATS_XPATHS["article-custom-meta"]):
@@ -577,7 +577,7 @@ class JatsArticle:
         try:
             node = self.xpath(expression)[0]
         except IndexError:
-            logger.error("no title")
+            logger.info("no title")
             return ""
 
         return node2text(node)
@@ -594,7 +594,7 @@ class JatsArticle:
         try:
             doi = self.xpath(expression)[0]
         except IndexError:
-            logger.error("no doi (url)")
+            logger.info("no doi (url)")
             return []
 
         udict["url"] = f"https://dx.doi.org/{doi}"
@@ -703,7 +703,7 @@ class JatsConverter:
             if len(nodes) > 0:
                 pubtypes.append(entry)
 
-        logger.info(pubtypes)
+        logger.debug(pubtypes)
 
         return pubtypes
 
@@ -723,7 +723,7 @@ class JatsConverter:
                                         schema=JSON_SCHEMA)
                     self.articles.append(article)
                 except jsonschema.ValidationError as Exc:
-                    logger.error(Exc, exc_info=False)
+                    logger.info(Exc, exc_info=False)
                     self.validation_failed = True
 
                 continue
