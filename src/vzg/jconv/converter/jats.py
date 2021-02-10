@@ -33,27 +33,42 @@ __docformat__ = 'plaintext'
 
 JATS_XPATHS = {}
 JATS_XPATHS["lang_code"] = "//article-meta/title-group/article-title/@xml:lang"
-JATS_XPATHS["journal-title"] = "//journal-meta/journal-title-group/journal-title/text()"
+JATS_XPATHS[
+    "journal-title"] = "//journal-meta/journal-title-group/journal-title/text()"
 JATS_XPATHS["pub-date"] = """//article-meta/pub-date[@date-type="{pubtype}"]"""
-JATS_XPATHS["pub-date-format"] = """//article-meta/pub-date[@publication-format="{pubtype}"]"""
+JATS_XPATHS[
+    "pub-date-format"] = """//article-meta/pub-date[@publication-format="{pubtype}"]"""
 JATS_XPATHS["pub-date-year"] = JATS_XPATHS["pub-date"] + """/year/text()"""
-JATS_XPATHS["primary_id"] = """//article-meta/article-id[@pub-id-type="publisher-id"]/text()"""
-JATS_XPATHS["other_ids_doi"] = """//article-meta/article-id[@pub-id-type="doi"]/text()"""
+JATS_XPATHS[
+    "primary_id"] = """//article-meta/article-id[@pub-id-type="publisher-id"]/text()"""
+JATS_XPATHS[
+    "other_ids_doi"] = """//article-meta/article-id[@pub-id-type="doi"]/text()"""
 JATS_XPATHS["article-title"] = "//article-meta/title-group/article-title"
-JATS_XPATHS["journal-id"] = """//journal-meta/journal-id[@journal-id-type="{journaltype}"]/text()"""
-JATS_XPATHS["journal-issn"] = """//journal-meta/issn[@pub-type="{pubtype}"]/text()"""
+JATS_XPATHS[
+    "journal-id"] = """//journal-meta/journal-id[@journal-id-type="{journaltype}"]/text()"""
+JATS_XPATHS[
+    "journal-issn"] = """//journal-meta/issn[@pub-type="{pubtype}"]/text()"""
+JATS_XPATHS[
+    "journal-issn-pformat"] = """//journal-meta/issn[@publication-format="{pubtype}"]/text()"""
 JATS_XPATHS["journal-volume"] = """//article-meta/volume/text()"""
 JATS_XPATHS["journal-issue"] = """//article-meta/issue/text()"""
 JATS_XPATHS["journal-start_page"] = """//article-meta/fpage/text()"""
 JATS_XPATHS["journal-end_page"] = """//article-meta/lpage/text()"""
-JATS_XPATHS["publisher-name"] = """//journal-meta/publisher/publisher-name/text()"""
-JATS_XPATHS["publisher-place"] = """//journal-meta/publisher/publisher-loc/text()"""
+JATS_XPATHS[
+    "publisher-name"] = """//journal-meta/publisher/publisher-name/text()"""
+JATS_XPATHS[
+    "publisher-place"] = """//journal-meta/publisher/publisher-loc/text()"""
 JATS_XPATHS["article-persons"] = """//article-meta/contrib-group/contrib"""
-JATS_XPATHS["article-copyright"] = """//article-meta/permissions/copyright-statement/text()"""
-JATS_XPATHS["article-license-type"] = """//article-meta/permissions/license/@license-type"""
-JATS_XPATHS["article-custom-meta"] = """//article-meta/custom-meta-group/custom-meta/meta-name"""
-JATS_XPATHS["article-oa-license"] = """//article-meta/permissions/license[contains(@xlink:href, 'creativecommons.org')]"""
-JATS_XPATHS["affiliation"] = """//article-meta/contrib-group/aff[@id="{rid}"]"""
+JATS_XPATHS[
+    "article-copyright"] = """//article-meta/permissions/copyright-statement/text()"""
+JATS_XPATHS[
+    "article-license-type"] = """//article-meta/permissions/license/@license-type"""
+JATS_XPATHS[
+    "article-custom-meta"] = """//article-meta/custom-meta-group/custom-meta/meta-name"""
+JATS_XPATHS[
+    "article-oa-license"] = """//article-meta/permissions/license[contains(@xlink:href, 'creativecommons.org')]"""
+JATS_XPATHS[
+    "affiliation"] = """//article-meta/contrib-group/aff[@id="{rid}"]"""
 JATS_XPATHS["abstracts-lang_code"] = "//article-meta/abstract/@xml:lang"
 JATS_XPATHS["abstracts"] = "//article-meta/abstract"
 JATS_XPATHS["abstracts-sec"] = "//article-meta/abstract/sec"
@@ -81,12 +96,7 @@ class JatsArticle:
     -------
     None
     """
-
-    def __init__(self,
-                 dom,
-                 pubtype,
-                 iso639=None,
-                 publisher=None):
+    def __init__(self, dom, pubtype, iso639=None, publisher=None):
         self.dom = dom
         self.iso639 = ISO_639() if isinstance(iso639, type(None)) else iso639
         self.pubtype = pubtype
@@ -106,7 +116,8 @@ class JatsArticle:
             atext = []
 
             try:
-                abstract["lang_code"] = self.iso639.i1toi2[node.attrib[langkey]]
+                abstract["lang_code"] = self.iso639.i1toi2[
+                    node.attrib[langkey]]
             except IndexError:
                 logger.info("abstracts: no lang_code")
             except KeyError:
@@ -162,10 +173,12 @@ class JatsArticle:
         nodes = self.dom.xpath(expression, namespaces=NAMESPACES)
 
         if len(nodes) > 0:
-            expression = JATS_XPATHS["pub-date-format"].format(pubtype=self.pubtype.name)
+            expression = JATS_XPATHS["pub-date-format"].format(
+                pubtype=self.pubtype.name)
         else:
-            expression = JATS_XPATHS["pub-date"].format(pubtype=self.pubtype.value)
-    
+            expression = JATS_XPATHS["pub-date"].format(
+                pubtype=self.pubtype.value)
+
         node = self.xpath(expression)
 
         if len(node) == 0:
@@ -195,7 +208,7 @@ class JatsArticle:
     def journal_date(self):
         """Look for the earliest date"""
         logger = logging.getLogger(__name__)
-        
+
         date_node = None
 
         expression = JATS_XPATHS["pub-date"].format(pubtype="pub")
@@ -205,10 +218,12 @@ class JatsArticle:
         for pubtype in JATS_SPRINGER_PUBTYPE:
             if basictype:
                 logger.debug("new pub")
-                expression = JATS_XPATHS["pub-date-format"].format(pubtype=pubtype.name)    
+                expression = JATS_XPATHS["pub-date-format"].format(
+                    pubtype=pubtype.name)
             else:
-                expression = JATS_XPATHS["pub-date"].format(pubtype=pubtype.value)
-            
+                expression = JATS_XPATHS["pub-date"].format(
+                    pubtype=pubtype.value)
+
             node = self.dom.xpath(expression, namespaces=NAMESPACES)
 
             if len(node) > 0:
@@ -227,13 +242,20 @@ class JatsArticle:
         """Article journal"""
         logger = logging.getLogger(__name__)
 
-        pdict = {"title": "",
-                 "year": "",
-                 "journal_ids": []}
+        pdict = {"title": "", "year": "", "journal_ids": []}
 
-        jids = {'springer': JATS_XPATHS["journal-id"].format(journaltype="publisher-id"),
-                'doi': JATS_XPATHS["journal-id"].format(journaltype="doi"),
-                self.pubtype.value: JATS_XPATHS["journal-issn"].format(pubtype=self.pubtype.value)}
+        jids = {
+            'emerald':
+            [JATS_XPATHS["journal-id"].format(journaltype="publisher")],
+            'springer':
+            [JATS_XPATHS["journal-id"].format(journaltype="publisher-id")],
+            'doi': [JATS_XPATHS["journal-id"].format(journaltype="doi")],
+            self.pubtype.value: [
+                JATS_XPATHS["journal-issn"].format(pubtype=self.pubtype.value),
+                JATS_XPATHS["journal-issn-pformat"].format(
+                    pubtype=self.pubtype.name)
+            ]
+        }
 
         expression = JATS_XPATHS["journal-title"]
         node = self.xpath(expression)
@@ -252,20 +274,22 @@ class JatsArticle:
         if isinstance(date_node.year, int):
             pdict["year"] = f"{date_node.year}"
 
-        for jtype, expression in jids.items():
-            node = self.xpath(expression)
+        for jtype, expressions in jids.items():
 
-            if len(node) == 0:
-                msg = f"no {jtype} journal_id ({self.pubtype.value})"
-                logger.info(msg)
-                continue
+            for expression in expressions:
+                node = self.xpath(expression)
 
-            jid = {'type': jtype, 'id': node[0]}
+                if len(node) == 0:
+                    msg = f"no {jtype} journal_id ({self.pubtype.value})"
+                    logger.info(msg)
+                    continue
 
-            if jid['type'] in JATS_SPRINGER_JOURNALTYPE.__members__:
-                jid['type'] = JATS_SPRINGER_JOURNALTYPE[jid['type']].value
+                jid = {'type': jtype, 'id': node[0]}
 
-            pdict["journal_ids"].append(jid)
+                if jid['type'] in JATS_SPRINGER_JOURNALTYPE.__members__:
+                    jid['type'] = JATS_SPRINGER_JOURNALTYPE[jid['type']].value
+
+                pdict["journal_ids"].append(jid)
 
         publisher = {}
 
@@ -286,10 +310,12 @@ class JatsArticle:
         if len(publisher) > 0:
             pdict["publisher"] = publisher
 
-        jdata = {"journal-volume": "volume",
-                 "journal-issue": "issue",
-                 "journal-start_page": "start_page",
-                 "journal-end_page": "end_page"}
+        jdata = {
+            "journal-volume": "volume",
+            "journal-issue": "issue",
+            "journal-start_page": "start_page",
+            "journal-end_page": "end_page"
+        }
 
         for xkey, attr in jdata.items():
             expression = JATS_XPATHS[xkey]
@@ -304,15 +330,17 @@ class JatsArticle:
     @property
     def jdict(self):
         """"""
-        jdict = {"abstracts": self.abstracts,
-                 "copyright": self.copyright,
-                 "lang_code": self.lang_code,
-                 "journal": self.journal,
-                 "persons": self.persons,
-                 "primary_id": self.primary_id,
-                 "other_ids": self.other_ids,
-                 "subject_terms": self.subjects,
-                 "title": self.title}
+        jdict = {
+            "abstracts": self.abstracts,
+            "copyright": self.copyright,
+            "lang_code": self.lang_code,
+            "journal": self.journal,
+            "persons": self.persons,
+            "primary_id": self.primary_id,
+            "other_ids": self.other_ids,
+            "subject_terms": self.subjects,
+            "title": self.title
+        }
 
         if isinstance(self.dateOfProduction, JatsDate) \
                 and isinstance(self.journal_date, JatsDate):
@@ -395,13 +423,15 @@ class JatsArticle:
                     logger.info(msg)
                     return None
 
-                if isinstance(affnode.find("institution-wrap"), etree._Element):
+                if isinstance(affnode.find("institution-wrap"),
+                              etree._Element):
                     inode = affnode.find("institution-wrap")
                     affdict_['name'] = ""
 
                     try:
                         affdict_['name'] = inode.xpath(
-                            """institution[@content-type="org-name"]/text()""")[0].strip()
+                            """institution[@content-type="org-name"]/text()"""
+                        )[0].strip()
                     except IndexError:
                         msg = "no affiliation name (org-name)"
                         logger.info(msg)
@@ -553,9 +583,11 @@ class JatsArticle:
             except IndexError:
                 continue
 
-            subject = {'scheme': "group" if title == "Keywords" else title,
-                       "terms": [],
-                       "lang_code": lang_code}
+            subject = {
+                'scheme': "group" if title == "Keywords" else title,
+                "terms": [],
+                "lang_code": lang_code
+            }
 
             for node in groupnode.xpath(subjext_exp):
                 subject["terms"].append(node)
@@ -654,12 +686,7 @@ class JatsConverter:
     >>> conv.articles
     []
     """
-
-    def __init__(self,
-                 jatspath,
-                 iso639=None,
-                 publisher=None,
-                 validate=False):
+    def __init__(self, jatspath, iso639=None, publisher=None, validate=False):
         self.jatspath = jatspath
         self.articles = []
         self.publisher = publisher
@@ -694,9 +721,11 @@ class JatsConverter:
         for entry in JATS_SPRINGER_PUBTYPE:
             if basictype:
                 logger.debug("new pub")
-                expression = JATS_XPATHS["pub-date-format"].format(pubtype=entry.name)
+                expression = JATS_XPATHS["pub-date-format"].format(
+                    pubtype=entry.name)
             else:
-                expression = JATS_XPATHS["pub-date"].format(pubtype=entry.value)
+                expression = JATS_XPATHS["pub-date"].format(
+                    pubtype=entry.value)
 
             nodes = self.dom.xpath(expression, namespaces=NAMESPACES)
 
@@ -712,9 +741,7 @@ class JatsConverter:
         logger = logging.getLogger(__name__)
 
         for pubtype in self.pubtypes:
-            article = JatsArticle(self.dom,
-                                  pubtype,
-                                  self.iso639,
+            article = JatsArticle(self.dom, pubtype, self.iso639,
                                   self.publisher)
 
             if self.validate:

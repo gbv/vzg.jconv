@@ -29,7 +29,6 @@ logger.level = logging.INFO
 
 
 class TestCase(unittest.TestCase):
-
     def setUp(self):
         unittest.TestCase.setUp(self)
 
@@ -92,6 +91,7 @@ class TestCase(unittest.TestCase):
 
         for article in jconv.articles:
             self.assertIsInstance(article, JatsArticle, "article")
+            # pprint(article.jdict)
             # print(article.json)
 
 
