@@ -32,8 +32,9 @@ class TestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
 
-        self.fpath = Path("article.xml")
-        self.fpaths = {"emerald": Path("article_emerald.xml")}
+        self.fpath = Path("data/tests/springer/article.xml")
+        self.fpaths = {"emerald": Path(
+            "data/tests/emerald/article_emerald.xml")}
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)

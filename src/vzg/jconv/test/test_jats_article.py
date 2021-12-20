@@ -10,7 +10,6 @@
 """
 
 # Imports
-import sys
 import unittest
 import logging
 from vzg.jconv.converter.jats import JatsArticle
@@ -33,8 +32,8 @@ class EPubArticle(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
 
-        self.fpath = Path("article.xml")
-        self.jpath = Path("article_epub.json")
+        self.fpath = Path("data/tests/springer/article.xml")
+        self.jpath = Path("data/tests/springer/article_epub.json")
 
         with open(self.jpath) as fh:
             self.testdata = json.load(fh)
@@ -117,8 +116,8 @@ class PPubArticle(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
 
-        self.fpath = Path("article.xml")
-        self.jpath = Path("article_ppub.json")
+        self.fpath = Path("data/tests/springer/article.xml")
+        self.jpath = Path("data/tests/springer/article_ppub.json")
 
         with open(self.jpath) as fh:
             self.testdata = json.load(fh)
@@ -199,8 +198,8 @@ class EPubArticlePublisher(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
 
-        self.fpath = Path("article.xml")
-        self.jpath = Path("article_epub_publisher.json")
+        self.fpath = Path("data/tests/springer/article.xml")
+        self.jpath = Path("data/tests/springer/article_epub_publisher.json")
 
         with open(self.jpath) as fh:
             self.testdata = json.load(fh)
