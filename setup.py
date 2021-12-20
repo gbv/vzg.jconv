@@ -2,7 +2,7 @@
 """Beschreibung
 ##############################################################################
 #
-# Copyright (c) 2020 Verbundzentrale des GBV.
+# Copyright (c) 2020-2021 Verbundzentrale des GBV.
 # All Rights Reserved.
 #
 ##############################################################################
@@ -29,10 +29,9 @@ setup(
     classifiers=[
         'Intended Audience :: Developers',
         'Programming Language :: Python',
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Operating System :: OS Independent",
         "License :: OSI Approved :: GNU Affero General Public License v3", ],
     url='https://github.com/gbv/vzg.jconv',
@@ -53,7 +52,7 @@ setup(
         'zope.interface'
     ],
     zip_safe=False,
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     entry_points={'console_scripts': [
         'simple-conv = vzg.jconv.tools.simple_conv:run'
     ]},
