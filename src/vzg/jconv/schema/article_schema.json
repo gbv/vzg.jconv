@@ -173,7 +173,7 @@
     "other_ids": {
       "type": "array",
       "title": "weitere IDs",
-      "description": "Weitere Identifier aus dem Quelldatensatz mit Angabe des Typs der ID, z.B. doi, urn, oai_id usw. (hier keine Identifier zu Zeitschriften, Personen usw.) Vergleiche http://swbtools.bsz-bw.de/cgi-bin/help.pl?cmd=kat&val=2113&regelwerk=RDA&verbund=GBV",
+      "description": "Weitere Identifier für den Artikel aus dem Quelldatensatz mit Angabe des Typs der ID, z.B. doi, urn, oai_id usw. (hier keine Identifier zu Zeitschriften, Personen usw.) Vergleiche http://swbtools.bsz-bw.de/cgi-bin/help.pl?cmd=kat&val=2113&regelwerk=RDA&verbund=GBV",
       "items": {
         "type": "object",
         "required": [
@@ -202,6 +202,37 @@
         }
       }
     },
+    "collection_ids": {
+      "type": "array",
+      "title": "IDs von Datensammlungen",
+      "description": "Datensätze können über diese IDs bestehenden Datensammlungen zugeordnet werden. Verwendung bitte je Projekt mit der Verbundzentrale (VZG) abklären. Beispiele: SSG-Nummer/FID-Kennzeichen, Produktsigel usw.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "title": "ID",
+            "description": "Wert der ID",
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Typ",
+            "description": "Typ der ID. Falls unkbekannt: unknown",
+            "examples": [
+              "sigel",
+              "fid",
+              "ssg"
+            ]
+          }
+        }
+      }
+    },    
     "title": {
       "type": "string",
       "title": "Titel",
@@ -385,6 +416,11 @@
             "title": "Codierte Zugangsbedingungen",
             "description": "Hier werden Zugangsbedingungen (z.B. Open Access) codiert gemäß Katalogisierungsrichtlinie für PICA3 4085 $4: http://swbtools.bsz-bw.de/cgi-bin/help.pl?cmd=kat&val=4085&regelwerk=RDA&verbund=GBV#$4",
             "type": "string"
+          },
+          "remarks": {
+            "title": "Allgemeine Bemerkung",
+            "description": "Bemerkungen zur URL als Text, die in PICA3-Feld 4950 $z abgelegt werden",
+            "type": "string"
           }
         }
       }
@@ -426,11 +462,24 @@
         "properties": {
           "terms": {
             "title": "Sacherschließungsterme",
-            "description": "Sacherschließungsterme als Array, jeder Term als eigenes Feld",
+            "description": "Sacherschließungsterme als Array. Entweder jeder Term als eigenes String-Feld; oder als Objekt bestehend aus einer Bezeichnung und einer ID oder Notation (z.B. GND-ID)",
             "type": "array",
             "items": {
-              "type": "string",
-              "minLength": 1
+              "type": ["string", "object"],
+              "minLength": 1,
+              "minProperties": 1,
+              "properties": {
+                "term": {
+                  "title": "Term/Bezeichnung",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "id": {
+                  "title": "Identifikator/Notation innerhalb des Sacherschließungssystems",
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
             }
           },
           "scheme": {
