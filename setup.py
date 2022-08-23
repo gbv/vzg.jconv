@@ -49,6 +49,7 @@ setup(
         'jsonschema',
         'lxml',
         'setuptools',
+        'wheel',
         'zope.interface'
     ],
     zip_safe=False,
