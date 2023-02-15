@@ -20,7 +20,7 @@ from lxml import etree
 from pprint import pprint
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
-__docformat__ = 'plaintext'
+__docformat__ = "plaintext"
 
 logger = logging.getLogger(__name__)
 logger.level = logging.INFO
@@ -33,8 +33,7 @@ class TestCase(unittest.TestCase):
         unittest.TestCase.setUp(self)
 
         self.fpath = Path("data/tests/springer/article.xml")
-        self.fpaths = {"emerald": Path(
-            "data/tests/emerald/article_emerald.xml")}
+        self.fpaths = {"emerald": Path("data/tests/emerald/article_emerald.xml")}
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -48,7 +47,7 @@ class TestCase(unittest.TestCase):
 
     def test02(self):
         """DOM"""
-        with open(self.fpath, 'rb') as fh:
+        with open(self.fpath, "rb") as fh:
             dom = etree.parse(fh)
 
         self.assertIsInstance(dom, etree._ElementTree, "DOM")
@@ -96,7 +95,7 @@ class TestCase(unittest.TestCase):
             # print(article.json)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestCase))
     unittest.TextTestRunner(verbosity=2).run(suite)
