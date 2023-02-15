@@ -12,6 +12,8 @@
 import logging
 from lxml import etree
 from vzg.jconv.gapi import JATS_SPRINGER_AUTHORTYPE
+from vzg.jconv.gapi import PERSON_ID_TYPES
+
 
 __author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
 __docformat__ = "plaintext"
@@ -167,6 +169,29 @@ class Person:
 
         return None
 
+    @property
+    def person_ids(self) -> list:
+        """person_ids
+
+        Returns:
+            list | None: _description_
+        """
+
+        def create_id(node):
+            iddict = {
+                "type": node.attrib.get("contrib-id-type", "unknown"),
+                "id": node.text,
+            }
+
+            try:
+                iddict["type"] = PERSON_ID_TYPES[iddict["type"]].value
+            except KeyError:
+                iddict["type"] = PERSON_ID_TYPES.unknown.value
+
+            return iddict
+
+        return [create_id(node) for node in self.node.findall("contrib-id")]
+
     def as_dict(self) -> dict:
         """Generate the person dict
 
@@ -194,5 +219,8 @@ class Person:
 
         if isinstance(self.affiliation, dict):
             person["affiliation"] = self.affiliation
+
+        if len(self.person_ids) > 0:
+            person["person_ids"] = self.person_ids
 
         return person
