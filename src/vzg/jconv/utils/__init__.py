@@ -16,7 +16,7 @@ from vzg.jconv.gapi import NAMESPACES
 import logging
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
-__docformat__ = 'plaintext'
+__docformat__ = "plaintext"
 
 # TeX formular
 TEXREX = re.compile(r"(\${1,2}.*\${1,2})")
@@ -28,7 +28,7 @@ SUBREX = re.compile(r"(\s*)(\w+)<sub>(.*?)\</sub>")
 SUPREX = re.compile(r"(\s*)(\w+)<sup>(.*?)\</sup>")
 
 
-def node2text(node):
+def node2text(node: etree._Element) -> str:
     """Strip all text from a node and their children
 
     Parameters
@@ -66,13 +66,15 @@ def node2text(node):
     nodetext = nodebytes.decode()
 
     def repl_sup(matchobj):
-        gc_ = "{0}$ {1}^{{{2}}} $".format(matchobj.group(
-            1), matchobj.group(2), matchobj.group(3))
+        gc_ = "{0}$ {1}^{{{2}}} $".format(
+            matchobj.group(1), matchobj.group(2), matchobj.group(3)
+        )
         return gc_
 
     def repl_sub(matchobj):
-        gc_ = "{0}$ {1}_{{{2}}} $".format(matchobj.group(
-            1), matchobj.group(2), matchobj.group(3))
+        gc_ = "{0}$ {1}_{{{2}}} $".format(
+            matchobj.group(1), matchobj.group(2), matchobj.group(3)
+        )
         return gc_
 
     nodetext = SUPREX.sub(repl_sup, nodetext)
@@ -83,18 +85,16 @@ def node2text(node):
     nodetext = nodebytes.decode()
 
     for c_ in stripchars:
-        nodetext = nodetext.replace(c_, '')
+        nodetext = nodetext.replace(c_, "")
 
     return nodetext
 
 
-def getNameOfPerson(node):
-    """Extract a persons name"""
+def getPerson(node: etree._Element) -> dict:
+    """Extract a person"""
     logger = logging.getLogger(__name__)
 
-    person = {"firstname": "",
-              "lastname": "",
-              "fullname": ""}
+    person = {"firstname": "", "lastname": "", "fullname": ""}
 
     name_node = None
 
