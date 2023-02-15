@@ -93,7 +93,7 @@ class Person:
             role = JATS_SPRINGER_AUTHORTYPE[self.node.get("contrib-type")].value
         except KeyError:
             msg = "unknown authortype"
-            logger.info(msg)
+            logger.debug(msg)
 
         return role
 
@@ -110,14 +110,14 @@ class Person:
             affiliation = self.node.xpath("""xref[@ref-type="aff"]""")[0]
         except IndexError:
             msg = "no affiliation"
-            logger.info(msg)
+            logger.debug(msg)
             return None
 
         rid = affiliation.get("rid")
 
         if isinstance(rid, type(None)):
             msg = "no affiliation"
-            logger.info(msg)
+            logger.debug(msg)
             return None
 
         aff_expression = """//article-meta/contrib-group/aff[@id="{rid}"]""".format(
@@ -128,7 +128,7 @@ class Person:
             affnode = self.node.xpath(aff_expression)[0]
         except IndexError:
             msg = "no affiliation"
-            logger.info(msg)
+            logger.debug(msg)
             return None
 
         if isinstance(affnode.find("institution-wrap"), etree._Element):
@@ -142,13 +142,13 @@ class Person:
                 )[0].strip()
             except IndexError:
                 msg = "no affiliation name (org-name)"
-                logger.info(msg)
+                logger.debug(msg)
 
             try:
                 affdict_["name"] = inode.xpath("""institution/text()""")[0].strip()
             except IndexError:
                 msg = "no affiliation name"
-                logger.info(msg)
+                logger.debug(msg)
 
             if len(affdict_["name"].strip()) == 0:
                 return None
@@ -211,7 +211,7 @@ class Person:
         for key, value in person.items():
             if len(value) == 0:
                 msg = f"no {key}"
-                logger.info(msg)
+                logger.debug(msg)
                 return None
 
         if isinstance(self.role, str):
