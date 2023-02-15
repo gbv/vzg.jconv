@@ -95,6 +95,78 @@ class Person:
 
         return role
 
+    @property
+    def affiliation(self) -> dict | None:
+        """_summary_
+
+        Returns:
+            dict | None: _description_
+        """
+        logger = logging.getLogger(__name__)
+
+        try:
+            affiliation = self.node.xpath("""xref[@ref-type="aff"]""")[0]
+        except IndexError:
+            msg = "no affiliation"
+            logger.info(msg)
+            return None
+
+        rid = affiliation.get("rid")
+
+        if isinstance(rid, type(None)):
+            msg = "no affiliation"
+            logger.info(msg)
+            return None
+
+        aff_expression = """//article-meta/contrib-group/aff[@id="{rid}"]""".format(
+            rid=rid
+        )
+
+        try:
+            affnode = self.node.xpath(aff_expression)[0]
+        except IndexError:
+            msg = "no affiliation"
+            logger.info(msg)
+            return None
+
+        if isinstance(affnode.find("institution-wrap"), etree._Element):
+            affdict_ = {}
+            inode = affnode.find("institution-wrap")
+            affdict_["name"] = ""
+
+            try:
+                affdict_["name"] = inode.xpath(
+                    """institution[@content-type="org-name"]/text()"""
+                )[0].strip()
+            except IndexError:
+                msg = "no affiliation name (org-name)"
+                logger.info(msg)
+
+            try:
+                affdict_["name"] = inode.xpath("""institution/text()""")[0].strip()
+            except IndexError:
+                msg = "no affiliation name"
+                logger.info(msg)
+
+            if len(affdict_["name"].strip()) == 0:
+                return None
+
+            affids = []
+
+            for affid in inode.xpath("""institution-id"""):
+                affiddict = {}
+
+                affiddict["type"] = affid.get("institution-id-type")
+                affiddict["id"] = affid.text
+
+                affids.append(affiddict)
+
+            affdict_["affiliation_ids"] = affids
+
+            return affdict_
+
+        return None
+
     def as_dict(self) -> dict:
         """Generate the person dict
 
@@ -119,5 +191,8 @@ class Person:
 
         if isinstance(self.role, str):
             person["role"] = self.role
+
+        if isinstance(self.affiliation, dict):
+            person["affiliation"] = self.affiliation
 
         return person
