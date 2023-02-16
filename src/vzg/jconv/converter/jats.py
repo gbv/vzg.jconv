@@ -530,7 +530,7 @@ class JatsArticle:
             logger.debug("no title")
             return ""
 
-        return flatten_line(node.text)
+        return node2text(node)
 
     @property
     def urls(self):
