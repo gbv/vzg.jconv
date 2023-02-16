@@ -25,6 +25,8 @@ GREEX = re.compile(r"\\up(\w+)")
 SUBREX = re.compile(r"(\s*)(\w+)<sub>(.*?)\</sub>")
 # Superscript
 SUPREX = re.compile(r"(\s*)(\w+)<sup>(.*?)\</sup>")
+# Strip the chars from a line
+STRIPCHARS = re.compile(r"\s+")
 
 
 def node2text(node: etree._Element) -> str:
@@ -84,6 +86,10 @@ def node2text(node: etree._Element) -> str:
     nodetext = nodebytes.decode()
 
     for c_ in stripchars:
-        nodetext = nodetext.replace(c_, "")
+        nodetext = nodetext.replace(c_, " ")
 
-    return nodetext
+    return flatten_line(nodetext)
+
+
+def flatten_line(line: str) -> str:
+    return STRIPCHARS.sub(" ", line).strip()

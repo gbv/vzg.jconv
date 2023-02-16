@@ -15,13 +15,13 @@ from vzg.jconv.interfaces import IArticle
 from vzg.jconv.interfaces import IConverter
 from vzg.jconv.gapi import NAMESPACES
 from vzg.jconv.gapi import JSON_SCHEMA
-from vzg.jconv.gapi import JATS_SPRINGER_AUTHORTYPE
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 from vzg.jconv.gapi import JATS_SPRINGER_JOURNALTYPE
 from vzg.jconv.langcode import ISO_639
 from vzg.jconv.publisher import getPublisherId
 from vzg.jconv.errors import NoPublisherError
 from vzg.jconv.utils import node2text
+from vzg.jconv.utils import flatten_line
 from vzg.jconv.utils.date import JatsDate
 from lxml import etree
 import logging
@@ -530,7 +530,7 @@ class JatsArticle:
             logger.debug("no title")
             return ""
 
-        return node2text(node)
+        return flatten_line(node.text)
 
     @property
     def urls(self):
