@@ -48,7 +48,7 @@ class Person:
         """
         try:
             return self.__name_node__.xpath("given-names/text()")[0].strip()
-        except AttributeError:
+        except (AttributeError, IndexError):
             pass
 
         return None
@@ -62,7 +62,7 @@ class Person:
         """
         try:
             return self.__name_node__.xpath("surname/text()")[0].strip()
-        except AttributeError:
+        except (AttributeError, IndexError):
             pass
 
         return None
