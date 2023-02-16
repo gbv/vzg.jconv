@@ -13,7 +13,7 @@ import logging
 from lxml import etree
 from vzg.jconv.gapi import JATS_SPRINGER_AUTHORTYPE
 from vzg.jconv.gapi import PERSON_ID_TYPES
-
+from vzg.jconv.utils import flatten_line
 
 __author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
 __docformat__ = "plaintext"
@@ -106,6 +106,9 @@ class Person:
         """
         logger = logging.getLogger(__name__)
 
+        stm_int_org_name = """institution[@content-type="org-name"]/text()"""
+        stm_inst_name = """institution/text()"""
+
         try:
             affiliation = self.node.xpath("""xref[@ref-type="aff"]""")[0]
         except IndexError:
@@ -137,15 +140,13 @@ class Person:
             affdict_["name"] = ""
 
             try:
-                affdict_["name"] = inode.xpath(
-                    """institution[@content-type="org-name"]/text()"""
-                )[0].strip()
+                affdict_["name"] = flatten_line(inode.xpath(stm_int_org_name)[0])
             except IndexError:
                 msg = "no affiliation name (org-name)"
                 logger.debug(msg)
 
             try:
-                affdict_["name"] = inode.xpath("""institution/text()""")[0].strip()
+                affdict_["name"] = flatten_line(inode.xpath(stm_inst_name)[0])
             except IndexError:
                 msg = "no affiliation name"
                 logger.debug(msg)
@@ -209,9 +210,9 @@ class Person:
         logger.debug(person)
 
         for key, value in person.items():
-            if len(value) == 0:
-                msg = f"no {key}"
-                logger.debug(msg)
+            if value is None:
+                msg = f"Missing {key} for person"
+                logger.info(msg)
                 return None
 
         if isinstance(self.role, str):
