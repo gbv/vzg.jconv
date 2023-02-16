@@ -411,7 +411,7 @@ class JatsArticle:
         try:
             pdict["type"] = getPublisherId(publisher)
         except NoPublisherError:
-            logger.debug("no publisher", exc_info=True)
+            logger.error("no publisher", exc_info=True)
 
         expression = JATS_XPATHS["other_ids_doi"]
         node = self.xpath(expression)
