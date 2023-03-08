@@ -396,7 +396,7 @@ class JatsArticle:
         """
         logger = logging.getLogger(__name__)
 
-        pdict = {"type": "", "id": ""}
+        pdict = {"type": "unknown", "id": ""}
 
         publisher = self.publisher
 
@@ -411,7 +411,7 @@ class JatsArticle:
         try:
             pdict["type"] = getPublisherId(publisher)
         except NoPublisherError:
-            logger.error("no publisher", exc_info=True)
+            logger.debug("no publisher", exc_info=True)
 
         expression = JATS_XPATHS["other_ids_doi"]
         node = self.xpath(expression)

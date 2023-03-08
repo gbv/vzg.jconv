@@ -212,7 +212,7 @@ class Person:
         for key, value in person.items():
             if value is None:
                 msg = f"Missing {key} for person"
-                logger.info(msg)
+                logger.debug(msg)
                 return None
 
         if isinstance(self.role, str):
