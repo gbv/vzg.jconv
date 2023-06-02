@@ -34,6 +34,7 @@ __docformat__ = "plaintext"
 
 JATS_XPATHS = {}
 JATS_XPATHS["lang_code"] = "//article-meta/title-group/article-title/@xml:lang"
+JATS_XPATHS["primary_lang_code"] = "//article/@xml:lang"
 JATS_XPATHS["journal-title"] = "//journal-meta/journal-title-group/journal-title/text()"
 JATS_XPATHS["pub-date"] = """//article-meta/pub-date[@date-type="{pubtype}"]"""
 JATS_XPATHS["pub-date-pubtype"] = """//article-meta/pub-date[@pub-type]"""
@@ -207,7 +208,7 @@ class JatsArticle:
     def lang_code(self):
         """Article lang_code"""
         logger = logging.getLogger(__name__)
-        attributes = self.xpath(JATS_XPATHS["lang_code"])
+        attributes = self.xpath(JATS_XPATHS["primary_lang_code"])
         lcode = []
 
         try:
