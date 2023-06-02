@@ -17,6 +17,7 @@ from vzg.jconv.gapi import NAMESPACES
 from vzg.jconv.gapi import JSON_SCHEMA
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 from vzg.jconv.gapi import JATS_SPRINGER_JOURNALTYPE
+from vzg.jconv.gapi import PUBTYPE_SOURCES
 from vzg.jconv.langcode import ISO_639
 from vzg.jconv.publisher import getPublisherId
 from vzg.jconv.errors import NoPublisherError
@@ -35,6 +36,10 @@ JATS_XPATHS = {}
 JATS_XPATHS["lang_code"] = "//article-meta/title-group/article-title/@xml:lang"
 JATS_XPATHS["journal-title"] = "//journal-meta/journal-title-group/journal-title/text()"
 JATS_XPATHS["pub-date"] = """//article-meta/pub-date[@date-type="{pubtype}"]"""
+JATS_XPATHS["pub-date-pubtype"] = """//article-meta/pub-date[@pub-type]"""
+JATS_XPATHS[
+    "pub-date-pubtype-val"
+] = """//article-meta/pub-date[@pub-type="{pubtype}"]"""
 JATS_XPATHS[
     "pub-date-format"
 ] = """//article-meta/pub-date[@publication-format="{pubtype}"]"""
@@ -101,11 +106,19 @@ class JatsArticle:
     None
     """
 
-    def __init__(self, dom, pubtype, iso639=None, publisher=None):
+    def __init__(
+        self,
+        dom,
+        pubtype,
+        iso639=None,
+        publisher=None,
+        pubtype_source=PUBTYPE_SOURCES.basic,
+    ):
         self.dom = dom
         self.iso639 = ISO_639() if isinstance(iso639, type(None)) else iso639
         self.pubtype = pubtype
         self.publisher = publisher
+        self.pubtype_source = pubtype_source
 
     @property
     def abstracts(self):
@@ -211,14 +224,13 @@ class JatsArticle:
 
         date_node = None
 
-        expression = JATS_XPATHS["pub-date"].format(pubtype="pub")
-        nodes = self.dom.xpath(expression, namespaces=NAMESPACES)
-        basictype = len(nodes) > 0
-
         for pubtype in JATS_SPRINGER_PUBTYPE:
-            if basictype:
-                logger.debug("new pub")
+            if self.pubtype_source == PUBTYPE_SOURCES.springer:
                 expression = JATS_XPATHS["pub-date-format"].format(pubtype=pubtype.name)
+            elif self.pubtype_source == PUBTYPE_SOURCES.degruyter:
+                expression = JATS_XPATHS["pub-date-pubtype-val"].format(
+                    pubtype=pubtype.value
+                )
             else:
                 expression = JATS_XPATHS["pub-date"].format(pubtype=pubtype.value)
 
@@ -244,7 +256,7 @@ class JatsArticle:
 
         jids = {
             "emerald": [JATS_XPATHS["journal-id"].format(journaltype="publisher")],
-            "springer": [JATS_XPATHS["journal-id"].format(journaltype="publisher-id")],
+            "basic": [JATS_XPATHS["journal-id"].format(journaltype="publisher-id")],
             "doi": [JATS_XPATHS["journal-id"].format(journaltype="doi")],
             self.pubtype.value: [
                 JATS_XPATHS["journal-issn"].format(pubtype=self.pubtype.value),
@@ -279,6 +291,11 @@ class JatsArticle:
                     continue
 
                 jid = {"type": jtype, "id": node[0]}
+
+                if jtype == "basic":
+                    jid["type"] = "springer"
+                    if self.pubtype_source == PUBTYPE_SOURCES.degruyter:
+                        jid["type"] = "degruyter"
 
                 if jid["type"] in JATS_SPRINGER_JOURNALTYPE.__members__:
                     jid["type"] = JATS_SPRINGER_JOURNALTYPE[jid["type"]].value
@@ -609,6 +626,7 @@ class JatsConverter:
         self.jatspath = jatspath
         self.articles = []
         self.publisher = publisher
+        self.pubtype_source = PUBTYPE_SOURCES.basic
 
         if not self.jatspath.is_file():
             raise OSError
@@ -633,14 +651,27 @@ class JatsConverter:
 
         pubtypes = []
 
+        # Springer
         expression = JATS_XPATHS["pub-date"].format(pubtype="pub")
         nodes = self.dom.xpath(expression, namespaces=NAMESPACES)
-        basictype = len(nodes) > 0
+        if len(nodes) > 0:
+            self.pubtype_source = PUBTYPE_SOURCES.springer
+
+        # deGruyter
+        if self.pubtype_source == PUBTYPE_SOURCES.basic:
+            expression = JATS_XPATHS["pub-date-pubtype"]
+            nodes = self.dom.xpath(expression, namespaces=NAMESPACES)
+            if len(nodes) > 0:
+                self.pubtype_source = PUBTYPE_SOURCES.degruyter
 
         for entry in JATS_SPRINGER_PUBTYPE:
-            if basictype:
+            if self.pubtype_source == PUBTYPE_SOURCES.springer:
                 logger.debug("new pub")
                 expression = JATS_XPATHS["pub-date-format"].format(pubtype=entry.name)
+            elif self.pubtype_source == PUBTYPE_SOURCES.degruyter:
+                expression = JATS_XPATHS["pub-date-pubtype-val"].format(
+                    pubtype=entry.value
+                )
             else:
                 expression = JATS_XPATHS["pub-date"].format(pubtype=entry.value)
 
@@ -658,7 +689,9 @@ class JatsConverter:
         logger = logging.getLogger(__name__)
 
         for pubtype in self.pubtypes:
-            article = JatsArticle(self.dom, pubtype, self.iso639, self.publisher)
+            article = JatsArticle(
+                self.dom, pubtype, self.iso639, self.publisher, self.pubtype_source
+            )
 
             if self.validate:
                 try:

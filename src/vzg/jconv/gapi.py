@@ -9,7 +9,7 @@
 """
 
 # Imports
-from enum import Enum
+from enum import Enum, auto
 from pathlib import Path
 import json
 
@@ -54,3 +54,9 @@ class PERSON_ID_TYPES(Enum):
 
     orcid = "orcid"
     unknown = "unknown"
+
+
+class PUBTYPE_SOURCES(Enum):
+    basic = auto()
+    degruyter = auto()
+    springer = auto()
