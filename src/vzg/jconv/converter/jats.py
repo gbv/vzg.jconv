@@ -259,11 +259,19 @@ class JatsArticle:
             "emerald": [JATS_XPATHS["journal-id"].format(journaltype="publisher")],
             "basic": [JATS_XPATHS["journal-id"].format(journaltype="publisher-id")],
             "doi": [JATS_XPATHS["journal-id"].format(journaltype="doi")],
-            self.pubtype.value: [
+        }
+
+        if self.pubtype_source == PUBTYPE_SOURCES.degruyter:
+            jids[JATS_SPRINGER_PUBTYPE.electronic.value] = [
+                JATS_XPATHS["journal-issn"].format(
+                    pubtype=JATS_SPRINGER_PUBTYPE.electronic.value
+                )
+            ]
+        else:
+            jids[self.pubtype.value] = [
                 JATS_XPATHS["journal-issn"].format(pubtype=self.pubtype.value),
                 JATS_XPATHS["journal-issn-pformat"].format(pubtype=self.pubtype.name),
-            ],
-        }
+            ]
 
         expression = JATS_XPATHS["journal-title"]
         node = self.xpath(expression)
