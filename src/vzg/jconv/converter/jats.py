@@ -697,6 +697,9 @@ class JatsConverter:
         """"""
         logger = logging.getLogger(__name__)
 
+        if self.dom.docinfo.root_name != "article":
+            return None
+
         for pubtype in self.pubtypes:
             article = JatsArticle(
                 self.dom, pubtype, self.iso639, self.publisher, self.pubtype_source
