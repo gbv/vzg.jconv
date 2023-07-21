@@ -3,7 +3,7 @@
 
 ##############################################################################
 #
-# Copyright (c) 2020 Verbundzentrale des GBV.
+# Copyright (c) 2023 Verbundzentrale des GBV.
 # All Rights Reserved.
 #
 ##############################################################################
@@ -11,7 +11,6 @@
 
 # Imports
 import unittest
-import logging
 from vzg.jconv.converter.jats import JatsArticle
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE, PUBTYPE_SOURCES
 from pathlib import Path
@@ -21,18 +20,13 @@ from lxml import etree
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = "plaintext"
 
-logger = logging.getLogger(__name__)
-logger.level = logging.INFO
-# stream_handler = logging.StreamHandler(sys.stdout)
-# logger.addHandler(stream_handler)
-
 
 class EPubArticle(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
 
-        self.fpath = Path("data/tests/springer/article.xml")
-        self.jpath = Path("data/tests/springer/article_epub.json")
+        self.fpath = Path("data/tests/degruyter/article.xml")
+        self.jpath = Path("data/tests/degruyter/article_epub.json")
 
         with open(self.jpath) as fh:
             self.testdata = json.load(fh)
@@ -43,7 +37,7 @@ class EPubArticle(unittest.TestCase):
         self.jobj = JatsArticle(
             self.dom,
             JATS_SPRINGER_PUBTYPE.electronic,
-            pubtype_source=PUBTYPE_SOURCES.basic,
+            pubtype_source=PUBTYPE_SOURCES.degruyter,
         )
 
     def tearDown(self):
@@ -73,9 +67,6 @@ class EPubArticle(unittest.TestCase):
 
     def test06(self):
         """persons"""
-        from pprint import pprint
-
-        # pprint(self.jobj.persons)
         self.assertEqual(self.jobj.persons, self.testdata["persons"], "persons")
 
     def test07(self):
@@ -105,8 +96,8 @@ class PPubArticle(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
 
-        self.fpath = Path("data/tests/springer/article.xml")
-        self.jpath = Path("data/tests/springer/article_ppub.json")
+        self.fpath = Path("data/tests/degruyter/article.xml")
+        self.jpath = Path("data/tests/degruyter/article_ppub.json")
 
         with open(self.jpath) as fh:
             self.testdata = json.load(fh)
@@ -117,7 +108,7 @@ class PPubArticle(unittest.TestCase):
         self.jobj = JatsArticle(
             self.dom,
             JATS_SPRINGER_PUBTYPE.print,
-            pubtype_source=PUBTYPE_SOURCES.basic,
+            pubtype_source=PUBTYPE_SOURCES.degruyter,
         )
 
     def tearDown(self):
@@ -169,43 +160,9 @@ class PPubArticle(unittest.TestCase):
 
     def test11(self):
         """dateOfProduction"""
-        self.assertEqual(
-            str(self.jobj.dateOfProduction),
-            self.testdata["dateOfProduction"],
-            "dateOfProduction",
-        )
+        self.assertNotIn("dateOfProduction", self.jobj.jdict, "dateOfProduction")
 
-
-class EPubArticlePublisher(unittest.TestCase):
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-
-        self.fpath = Path("data/tests/springer/article.xml")
-        self.jpath = Path("data/tests/springer/article_epub_publisher.json")
-
-        with open(self.jpath) as fh:
-            self.testdata = json.load(fh)
-
-        with open(self.fpath, "rb") as fh:
-            self.dom = etree.parse(fh)
-
-        self.jobj = JatsArticle(
-            self.dom, JATS_SPRINGER_PUBTYPE.electronic, publisher="Emerald"
-        )
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-
-    def test01(self):
-        """title"""
-        self.assertEqual(self.jobj.title, self.testdata["title"], "title")
-
-    def test02(self):
-        """lang_code"""
-        self.assertEqual(self.jobj.lang_code, self.testdata["lang_code"], "lang_code")
-
-    def test03(self):
-        """primary_id"""
-        self.assertEqual(
-            self.jobj.primary_id, self.testdata["primary_id"], "primary_id"
-        )
+    def test12(self):
+        """eissn überprüfen"""
+        itypes = [entry["type"] for entry in self.jobj.journal["journal_ids"]]
+        self.assertIn("eissn", itypes, "eissn")

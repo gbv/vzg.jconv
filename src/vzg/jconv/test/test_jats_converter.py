@@ -3,7 +3,7 @@
 
 ##############################################################################
 #
-# Copyright (c) 2020 Verbundzentrale des GBV.
+# Copyright (c) 2020-2023 Verbundzentrale des GBV.
 # All Rights Reserved.
 #
 ##############################################################################
@@ -17,7 +17,7 @@ from pathlib import Path
 from vzg.jconv.converter.jats import JatsConverter
 from vzg.jconv.converter.jats import JatsArticle
 from lxml import etree
-from pprint import pprint
+
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = "plaintext"
@@ -28,12 +28,17 @@ logger.level = logging.INFO
 # logger.addHandler(stream_handler)
 
 
-class TestCase(unittest.TestCase):
+class AricleConverter(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
 
-        self.fpath = Path("data/tests/springer/article.xml")
-        self.fpaths = {"emerald": Path("data/tests/emerald/article_emerald.xml")}
+        self.fpaths = {
+            "emerald": Path("data/tests/emerald/article_emerald.xml"),
+            "degruyter": Path("data/tests/degruyter/article.xml"),
+            "springer": Path("data/tests/springer/article.xml"),
+        }
+
+        self.fpath = self.fpaths["springer"]
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -77,7 +82,6 @@ class TestCase(unittest.TestCase):
 
         for article in jconv.articles:
             self.assertIsInstance(article, JatsArticle, "article")
-            # pprint(article.json)
 
     def test05(self):
         """validate emerald"""
@@ -91,11 +95,22 @@ class TestCase(unittest.TestCase):
 
         for article in jconv.articles:
             self.assertIsInstance(article, JatsArticle, "article")
-            # pprint(article.jdict)
-            # print(article.json)
+
+    def test06(self):
+        """validate degruyter"""
+        jconv = JatsConverter(self.fpaths["degruyter"], validate=True)
+
+        self.assertTrue(len(jconv.articles) == 0, "articles")
+
+        jconv.run()
+
+        self.assertTrue(len(jconv.articles) == 2, "articles")
+
+        for article in jconv.articles:
+            self.assertIsInstance(article, JatsArticle, "article")
 
 
-if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestCase))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+# if __name__ == "__main__":
+#     suite = unittest.TestSuite()
+#     suite.addTest(unittest.makeSuite(AricleConverter))
+#     unittest.TextTestRunner(verbosity=2).run(suite)
