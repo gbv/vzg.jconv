@@ -3,3 +3,4 @@ py11-pytest:
   script:
     - apt-get update -q -y
     - pip install poetry
+    - ls -lsh
