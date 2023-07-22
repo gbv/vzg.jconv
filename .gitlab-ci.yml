@@ -4,4 +4,4 @@ py11-pytest:
     - apt-get update -q -y
     - pip install pytest
     - pip install .
-    - pytest
+    - pytest --pyargs vzg.jconv -v
