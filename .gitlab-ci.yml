@@ -2,5 +2,5 @@ py11-pytest:
   image: python:3.11
   script:
     - apt-get update -q -y
-    - pip install poetry
-    - ls -lsh
+    - pip install pytest
+    - pytest
