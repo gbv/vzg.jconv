@@ -3,4 +3,5 @@ py11-pytest:
   script:
     - apt-get update -q -y
     - pip install pytest
+    - pip install .
     - pytest
