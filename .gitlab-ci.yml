@@ -6,5 +6,9 @@ py11-pytest:
     - pip install .
     - mkdir -p data/tests/springer
     - cp "$JCONV_SPRINGER_ARTICLE" data/tests/springer/article.xml
+    - cp "$JCONV_SPRINGER_ARTICLE_EPUP_JSON" data/tests/springer/article_epub.json
+    - cp "$JCONV_SPRINGER_ARTICLE_PPUP_JSON" data/tests/springer/article_ppub.json
+    - cp "$JCONV_SPRINGER_ARTICLE_EPUP_PUBLISHER_JSON" data/tests/springer/article_epub_publisher.json
+    - cp "$JCONV_SPRINGER_PERSON" data/tests/springer/person.xml
     - ls -lsh data/tests/springer/
     - pytest --pyargs vzg.jconv
