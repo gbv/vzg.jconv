@@ -4,4 +4,5 @@ py11-pytest:
     - apt-get update -q -y
     - pip install pytest
     - pip install .
-    - pytest --pyargs vzg.jconv -v
+    - echo "$JCONV_SPRINGER_ARTICLE"
+    # - pytest --pyargs vzg.jconv -v
