@@ -4,5 +4,6 @@ py11-pytest:
     - apt-get update -q -y
     - pip install pytest
     - pip install .
-    - echo "$JCONV_SPRINGER_ARTICLE"
-    # - pytest --pyargs vzg.jconv -v
+    - mkdir -p data/tests/springer
+    - cp "$JCONV_SPRINGER_ARTICLE" data/tests/springer/article.xml
+    - pytest --pyargs vzg.jconv -v
