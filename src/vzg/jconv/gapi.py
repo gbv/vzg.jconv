@@ -49,6 +49,13 @@ class JATS_SPRINGER_AUTHORTYPE(Enum):
     author = "aut"
 
 
+class JATS_PUBTYPE_SUFFIX(Enum):
+    """"""
+
+    electronic = "-e"
+    print = "-p"
+
+
 class PERSON_ID_TYPES(Enum):
     """"""
 

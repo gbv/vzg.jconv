@@ -13,6 +13,9 @@
 from lxml import etree
 import re
 from vzg.jconv.gapi import NAMESPACES
+from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
+from vzg.jconv.gapi import JATS_PUBTYPE_SUFFIX
+
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = "plaintext"
@@ -93,3 +96,12 @@ def node2text(node: etree._Element) -> str:
 
 def flatten_line(line: str) -> str:
     return STRIPCHARS.sub(" ", line).strip()
+
+
+def get_pubtype_suffix(pubtype: str) -> str:
+    pdict = {
+        JATS_SPRINGER_PUBTYPE.print.value: JATS_PUBTYPE_SUFFIX.print.value,
+        JATS_SPRINGER_PUBTYPE.electronic.value: JATS_PUBTYPE_SUFFIX.electronic.value,
+    }
+
+    return pdict.get(pubtype, "")

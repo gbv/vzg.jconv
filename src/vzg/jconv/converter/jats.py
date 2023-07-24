@@ -18,11 +18,12 @@ from vzg.jconv.gapi import JSON_SCHEMA
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 from vzg.jconv.gapi import JATS_SPRINGER_JOURNALTYPE
 from vzg.jconv.gapi import PUBTYPE_SOURCES
+from vzg.jconv.gapi import JATS_PUBTYPE_SUFFIX
 from vzg.jconv.langcode import ISO_639
 from vzg.jconv.publisher import getPublisherId
 from vzg.jconv.errors import NoPublisherError
 from vzg.jconv.utils import node2text
-from vzg.jconv.utils import flatten_line
+from vzg.jconv.utils import get_pubtype_suffix
 from vzg.jconv.utils.date import JatsDate
 from lxml import etree
 import logging
@@ -305,6 +306,7 @@ class JatsArticle:
                     jid["type"] = "springer"
                     if self.pubtype_source == PUBTYPE_SOURCES.degruyter:
                         jid["type"] = "degruyter"
+                        jid["id"] += get_pubtype_suffix(self.pubtype.value)
 
                 if jid["type"] in JATS_SPRINGER_JOURNALTYPE.__members__:
                     jid["type"] = JATS_SPRINGER_JOURNALTYPE[jid["type"]].value
@@ -445,11 +447,7 @@ class JatsArticle:
         try:
             doi_path = node[0].split("/")
             pdict["id"] = doi_path[-1]
-
-            if self.pubtype.value == JATS_SPRINGER_PUBTYPE.print.value:
-                pdict["id"] += "-p"
-            elif self.pubtype.value == JATS_SPRINGER_PUBTYPE.electronic.value:
-                pdict["id"] += "-e"
+            pdict["id"] += get_pubtype_suffix(self.pubtype.value)
 
             return pdict
         except (IndexError, ValueError):
@@ -460,11 +458,7 @@ class JatsArticle:
 
         try:
             pdict["id"] = node[0]
-
-            if self.pubtype.value == JATS_SPRINGER_PUBTYPE.print.value:
-                pdict["id"] += "-p"
-            elif self.pubtype.value == JATS_SPRINGER_PUBTYPE.electronic.value:
-                pdict["id"] += "-e"
+            pdict["id"] += get_pubtype_suffix(self.pubtype.value)
         except IndexError:
             logger.debug("no primary_id")
 
