@@ -37,6 +37,10 @@ for checkname, checkdata in __jdata__.items():
 
 def getPublisherId(publisher: str) -> str:
     """Maps a publisher name to publisher id"""
+
+    if not isinstance(publisher, str):
+        raise NoPublisherError(publisher)
+
     for checkdata in PUBIDS.values():
         if checkdata["operator"] == "regex":
             if checkdata["compiled"].match(publisher):
