@@ -1,7 +1,7 @@
 py10-pytest:
   image:
     name: python:3.10
-    pull_policy: if-not-present
+    pull_policy: always
   script:
     - apt-get update -q -y
     - pip install pytest
@@ -21,7 +21,7 @@ py10-pytest:
 py11-pytest:
   image:
     name: python:3.11
-    pull_policy: if-not-present
+    pull_policy: always
   script:
     - apt-get update -q -y
     - pip install pytest
