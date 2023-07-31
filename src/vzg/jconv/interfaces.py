@@ -2,7 +2,7 @@
 """Interfaces
 ##############################################################################
 #
-# Copyright (c) 2020 Verbundzentrale des GBV.
+# Copyright (c) 2020-2023 Verbundzentrale des GBV.
 # All Rights Reserved.
 #
 ##############################################################################
@@ -12,7 +12,7 @@
 from zope.interface import Attribute, Interface
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
-__docformat__ = 'plaintext'
+__docformat__ = "plaintext"
 
 
 class IArticle(Interface):
@@ -32,3 +32,11 @@ class IConverter(Interface):
 
     def run(self):
         """Start the conversion"""
+
+
+class IJournal(Interface):
+    """Journal"""
+
+    journal_ids = Attribute("List of journal identifier")
+    title = Attribute("Journal title")
+    year = Attribute("Year")
