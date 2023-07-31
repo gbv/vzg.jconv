@@ -1,24 +1,24 @@
-# py10-pytest:
-#   image:
-#     name: python:3.10
-#     pull_policy: always
-#   script:
-#     - apt-get update -q -y
-#     - pip install pytest
-#     - pip install .
-#     - mkdir -p data/tests/springer data/tests/emerald data/tests/degruyter
-#     - cp "$JCONV_SPRINGER_ARTICLE" data/tests/springer/article.xml
-#     - cp "$JCONV_SPRINGER_ARTICLE_EPUP_JSON" data/tests/springer/article_epub.json
-#     - cp "$JCONV_SPRINGER_ARTICLE_PPUP_JSON" data/tests/springer/article_ppub.json
-#     - cp "$JCONV_SPRINGER_ARTICLE_EPUP_PUBLISHER_JSON" data/tests/springer/article_epub_publisher.json
-#     - cp "$JCONV_SPRINGER_PERSON" data/tests/springer/person.xml
-#     - cp "$JCONV_EMERALD_ARTICLE" data/tests/emerald/article_emerald.xml
-#     - cp "$JCONV_DEGRUYTER_ARTICLE" data/tests/degruyter/article.xml
-#     - cp "$JCONV_DEGRUYTER_ARTICLE_ABBREV" data/tests/degruyter/article_abbrev.xml
-#     - cp "$JCONV_DEGRUYTER_ARTICLE_EPUP_JSON" data/tests/degruyter/article_epub.json
-#     - cp "$JCONV_DEGRUYTER_ARTICLE_PPUP_JSON" data/tests/degruyter/article_ppub.json
-#     - cp "$JCONV_DEGRUYTER_ARTICLE_ABBREV_PPUP_JSON" data/tests/degruyter/article_abbrev_ppub.json
-#     - pytest --pyargs vzg.jconv
+py10-pytest:
+  image:
+    name: python:3.10
+    pull_policy: if-not-present
+  script:
+    - apt-get update -q -y
+    - pip install pytest
+    - pip install .
+    - mkdir -p data/tests/springer data/tests/emerald data/tests/degruyter
+    - cp "$JCONV_SPRINGER_ARTICLE" data/tests/springer/article.xml
+    - cp "$JCONV_SPRINGER_ARTICLE_EPUP_JSON" data/tests/springer/article_epub.json
+    - cp "$JCONV_SPRINGER_ARTICLE_PPUP_JSON" data/tests/springer/article_ppub.json
+    - cp "$JCONV_SPRINGER_ARTICLE_EPUP_PUBLISHER_JSON" data/tests/springer/article_epub_publisher.json
+    - cp "$JCONV_SPRINGER_PERSON" data/tests/springer/person.xml
+    - cp "$JCONV_EMERALD_ARTICLE" data/tests/emerald/article_emerald.xml
+    - cp "$JCONV_DEGRUYTER_ARTICLE" data/tests/degruyter/article.xml
+    - cp "$JCONV_DEGRUYTER_ARTICLE_ABBREV" data/tests/degruyter/article_abbrev.xml
+    - cp "$JCONV_DEGRUYTER_ARTICLE_EPUP_JSON" data/tests/degruyter/article_epub.json
+    - cp "$JCONV_DEGRUYTER_ARTICLE_PPUP_JSON" data/tests/degruyter/article_ppub.json
+    - cp "$JCONV_DEGRUYTER_ARTICLE_ABBREV_PPUP_JSON" data/tests/degruyter/article_abbrev_ppub.json
+    - pytest --pyargs vzg.jconv
 
 py11-pytest:
   image:
