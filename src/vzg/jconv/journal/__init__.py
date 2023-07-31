@@ -32,26 +32,6 @@ class JatsJournal:
     def __init__(self, article: etree._ElementTree) -> None:
         self.article = article
 
-        self.jids = {
-            "emerald": [JATS_XPATHS["journal-id"].format(journaltype="publisher")],
-            "basic": [JATS_XPATHS["journal-id"].format(journaltype="publisher-id")],
-            "doi": [JATS_XPATHS["journal-id"].format(journaltype="doi")],
-        }
-
-        if self.article.pubtype_source == PUBTYPE_SOURCES.degruyter:
-            self.jids[JATS_SPRINGER_PUBTYPE.electronic.value] = [
-                JATS_XPATHS["journal-issn"].format(
-                    pubtype=JATS_SPRINGER_PUBTYPE.electronic.value
-                )
-            ]
-        else:
-            self.jids[self.article.pubtype.value] = [
-                JATS_XPATHS["journal-issn"].format(pubtype=self.article.pubtype.value),
-                JATS_XPATHS["journal-issn-pformat"].format(
-                    pubtype=self.article.pubtype.name
-                ),
-            ]
-
     def as_dict(self) -> dict:
         logger = logging.getLogger(__name__)
         journal = {"title": self.title, "year": "", "journal_ids": self.ids}
@@ -114,17 +94,52 @@ class JatsJournal:
         return date_node
 
     @property
+    def jids(self) -> dict:
+        jids = {
+            "emerald": [JATS_XPATHS["journal-id"].format(journaltype="publisher")],
+            "basic": [JATS_XPATHS["journal-id"].format(journaltype="publisher-id")],
+            "doi": [JATS_XPATHS["journal-id"].format(journaltype="doi")],
+            self.article.pubtype.value: [
+                JATS_XPATHS["journal-issn"].format(pubtype=self.article.pubtype.value),
+                JATS_XPATHS["journal-issn-pformat"].format(
+                    pubtype=self.article.pubtype.name
+                ),
+            ],
+        }
+
+        if self.article.pubtype_source == PUBTYPE_SOURCES.degruyter:
+            if JATS_SPRINGER_PUBTYPE.electronic.value in jids:
+                jids[JATS_SPRINGER_PUBTYPE.electronic.value].append(
+                    JATS_XPATHS["journal-issn"].format(
+                        pubtype=JATS_SPRINGER_PUBTYPE.electronic.value
+                    )
+                )
+            else:
+                jids[JATS_SPRINGER_PUBTYPE.electronic.value] = [
+                    JATS_XPATHS["journal-issn"].format(
+                        pubtype=JATS_SPRINGER_PUBTYPE.electronic.value
+                    )
+                ]
+
+        return jids
+
+    @property
     def ids(self) -> list:
         logger = logging.getLogger(__name__)
 
         _ids = []
 
         for jtype, expressions in self.jids.items():
+            done = []
+
             for expression in expressions:
+                if jtype in done:
+                    continue
+
                 node = self.xpath(expression)
 
                 if len(node) == 0:
-                    msg = f"no {jtype} journal_id ({self.article.pubtype.value})"
+                    msg = f"no {jtype} journal_id ({expression})"
                     logger.debug(msg)
                     continue
 
@@ -140,6 +155,8 @@ class JatsJournal:
                     jid["type"] = JATS_SPRINGER_JOURNALTYPE[jid["type"]].value
 
                 _ids.append(jid)
+
+                done.append(jtype)
 
         return _ids
 
