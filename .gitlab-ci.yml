@@ -14,6 +14,7 @@ py10-pytest:
     - cp "$JCONV_SPRINGER_PERSON" data/tests/springer/person.xml
     - cp "$JCONV_EMERALD_ARTICLE" data/tests/emerald/article_emerald.xml
     - cp "$JCONV_DEGRUYTER_ARTICLE" data/tests/degruyter/article.xml
+    - cp "$JCONV_DEGRUYTER_ARTICLE_ABBREV" data/tests/degruyter/article_abbrev.xml
     - cp "$JCONV_DEGRUYTER_ARTICLE_EPUP_JSON" data/tests/degruyter/article_epub.json
     - cp "$JCONV_DEGRUYTER_ARTICLE_PPUP_JSON" data/tests/degruyter/article_ppub.json
     - pytest --pyargs vzg.jconv
@@ -34,6 +35,7 @@ py11-pytest:
     - cp "$JCONV_SPRINGER_PERSON" data/tests/springer/person.xml
     - cp "$JCONV_EMERALD_ARTICLE" data/tests/emerald/article_emerald.xml
     - cp "$JCONV_DEGRUYTER_ARTICLE" data/tests/degruyter/article.xml
+    - cp "$JCONV_DEGRUYTER_ARTICLE_ABBREV" data/tests/degruyter/article_abbrev.xml
     - cp "$JCONV_DEGRUYTER_ARTICLE_EPUP_JSON" data/tests/degruyter/article_epub.json
     - cp "$JCONV_DEGRUYTER_ARTICLE_PPUP_JSON" data/tests/degruyter/article_ppub.json
     - pytest --pyargs vzg.jconv
