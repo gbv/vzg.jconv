@@ -17,6 +17,7 @@
 #     - cp "$JCONV_DEGRUYTER_ARTICLE_ABBREV" data/tests/degruyter/article_abbrev.xml
 #     - cp "$JCONV_DEGRUYTER_ARTICLE_EPUP_JSON" data/tests/degruyter/article_epub.json
 #     - cp "$JCONV_DEGRUYTER_ARTICLE_PPUP_JSON" data/tests/degruyter/article_ppub.json
+#     - cp "$JCONV_DEGRUYTER_ARTICLE_ABBREV_PPUP_JSON" data/tests/degruyter/article_abbrev_ppub.json
 #     - pytest --pyargs vzg.jconv
 
 py11-pytest:
@@ -38,4 +39,5 @@ py11-pytest:
     - cp "$JCONV_DEGRUYTER_ARTICLE_ABBREV" data/tests/degruyter/article_abbrev.xml
     - cp "$JCONV_DEGRUYTER_ARTICLE_EPUP_JSON" data/tests/degruyter/article_epub.json
     - cp "$JCONV_DEGRUYTER_ARTICLE_PPUP_JSON" data/tests/degruyter/article_ppub.json
+    - cp "$JCONV_DEGRUYTER_ARTICLE_ABBREV_PPUP_JSON" data/tests/degruyter/article_abbrev_ppub.json
     - pytest --pyargs vzg.jconv
