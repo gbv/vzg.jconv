@@ -18,7 +18,6 @@ from vzg.jconv.gapi import JSON_SCHEMA
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 from vzg.jconv.gapi import JATS_SPRINGER_JOURNALTYPE
 from vzg.jconv.gapi import PUBTYPE_SOURCES
-from vzg.jconv.gapi import JATS_PUBTYPE_SUFFIX
 from vzg.jconv.langcode import ISO_639
 from vzg.jconv.publisher import getPublisherId
 from vzg.jconv.errors import NoPublisherError
@@ -70,6 +69,7 @@ JATS_XPATHS["article-persons"] = """//article-meta/contrib-group/contrib"""
 JATS_XPATHS[
     "article-copyright"
 ] = """//article-meta/permissions/copyright-statement/text()"""
+JATS_XPATHS["article-copyright-short"] = """//article-meta/copyright-statement/text()"""
 JATS_XPATHS[
     "article-license-type"
 ] = """//article-meta/permissions/license/@license-type"""
@@ -172,14 +172,18 @@ class JatsArticle:
     def copyright(self):
         """Article copyright"""
         logger = logging.getLogger(__name__)
-        nodes = self.xpath(JATS_XPATHS["article-copyright"])
 
+        stms = ("article-copyright", "article-copyright-short")
         copyr = ""
 
-        try:
-            copyr = nodes[0].strip()
-        except IndexError:
-            logger.debug("no copyright")
+        for stm in stms:
+            nodes = self.xpath(JATS_XPATHS[stm])
+
+            try:
+                copyr = nodes[0].strip()
+                break
+            except IndexError:
+                logger.debug("no copyright")
 
         return copyr
 
