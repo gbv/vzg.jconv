@@ -1,5 +1,7 @@
 py10-pytest:
-  image: python:3.10
+  image:
+    name: python:3.10
+    pull_policy: always
   script:
     - apt-get update -q -y
     - pip install pytest
@@ -17,7 +19,9 @@ py10-pytest:
     - pytest --pyargs vzg.jconv
 
 py11-pytest:
-  image: python:3.11
+  image:
+    name: python:3.11
+    pull_policy: always
   script:
     - apt-get update -q -y
     - pip install pytest
