@@ -18,40 +18,13 @@ from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 from vzg.jconv.gapi import PUBTYPE_SOURCES
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE, PUBTYPE_SOURCES
 from vzg.jconv.gapi import JATS_SPRINGER_JOURNALTYPE
+from vzg.jconv.gapi import JATS_XPATHS
 from vzg.jconv.utils.date import JatsDate
 from vzg.jconv.utils import get_pubtype_suffix
 from lxml import etree
 
 __author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
 __docformat__ = "plaintext"
-
-JATS_XPATHS = {}
-
-JATS_XPATHS["journal-title"] = "//journal-meta/journal-title-group/journal-title/text()"
-JATS_XPATHS[
-    "abbrev-journal-title"
-] = """//journal-meta/journal-title-group/abbrev-journal-title[@abbrev-type="full"]/text()"""
-JATS_XPATHS["pub-date"] = """//article-meta/pub-date[@date-type="{pubtype}"]"""
-JATS_XPATHS[
-    "pub-date-pubtype-val"
-] = """//article-meta/pub-date[@pub-type="{pubtype}"]"""
-JATS_XPATHS[
-    "pub-date-format"
-] = """//article-meta/pub-date[@publication-format="{pubtype}"]"""
-JATS_XPATHS["pub-date-year"] = JATS_XPATHS["pub-date"] + """/year/text()"""
-JATS_XPATHS[
-    "journal-id"
-] = """//journal-meta/journal-id[@journal-id-type="{journaltype}"]/text()"""
-JATS_XPATHS["journal-issn"] = """//journal-meta/issn[@pub-type="{pubtype}"]/text()"""
-JATS_XPATHS[
-    "journal-issn-pformat"
-] = """//journal-meta/issn[@publication-format="{pubtype}"]/text()"""
-JATS_XPATHS["publisher-name"] = """//journal-meta/publisher/publisher-name/text()"""
-JATS_XPATHS["publisher-place"] = """//journal-meta/publisher/publisher-loc/text()"""
-JATS_XPATHS["journal-volume"] = """//article-meta/volume/text()"""
-JATS_XPATHS["journal-issue"] = """//article-meta/issue/text()"""
-JATS_XPATHS["journal-start_page"] = """//article-meta/fpage/text()"""
-JATS_XPATHS["journal-end_page"] = """//article-meta/lpage/text()"""
 
 
 @implementer(IJournal)
