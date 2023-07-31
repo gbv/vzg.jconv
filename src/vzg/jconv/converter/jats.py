@@ -20,6 +20,7 @@ from vzg.jconv.gapi import JATS_SPRINGER_JOURNALTYPE
 from vzg.jconv.gapi import PUBTYPE_SOURCES
 from vzg.jconv.langcode import ISO_639
 from vzg.jconv.publisher import getPublisherId
+from vzg.jconv.journal import JatsJournal
 from vzg.jconv.errors import NoPublisherError
 from vzg.jconv.utils import node2text
 from vzg.jconv.utils import get_pubtype_suffix
@@ -121,6 +122,7 @@ class JatsArticle:
         self.pubtype = pubtype
         self.publisher = publisher
         self.pubtype_source = pubtype_source
+        self._journal = JatsJournal(article=self)
 
     @property
     def abstracts(self):
@@ -224,134 +226,9 @@ class JatsArticle:
         return lcode
 
     @property
-    def journal_date(self):
-        """Look for the earliest date"""
-        logger = logging.getLogger(__name__)
-
-        date_node = None
-
-        for pubtype in JATS_SPRINGER_PUBTYPE:
-            if self.pubtype_source == PUBTYPE_SOURCES.springer:
-                expression = JATS_XPATHS["pub-date-format"].format(pubtype=pubtype.name)
-            elif self.pubtype_source == PUBTYPE_SOURCES.degruyter:
-                expression = JATS_XPATHS["pub-date-pubtype-val"].format(
-                    pubtype=pubtype.value
-                )
-            else:
-                expression = JATS_XPATHS["pub-date"].format(pubtype=pubtype.value)
-
-            node = self.dom.xpath(expression, namespaces=NAMESPACES)
-
-            if len(node) > 0:
-                dnode = JatsDate(node[0])
-
-                if isinstance(date_node, JatsDate):
-                    if dnode.todate() < date_node.todate():
-                        date_node = dnode
-                else:
-                    date_node = dnode
-
-        return date_node
-
-    @property
     def journal(self):
         """Article journal"""
-        logger = logging.getLogger(__name__)
-
-        pdict = {"title": "", "year": "", "journal_ids": []}
-
-        jids = {
-            "emerald": [JATS_XPATHS["journal-id"].format(journaltype="publisher")],
-            "basic": [JATS_XPATHS["journal-id"].format(journaltype="publisher-id")],
-            "doi": [JATS_XPATHS["journal-id"].format(journaltype="doi")],
-        }
-
-        if self.pubtype_source == PUBTYPE_SOURCES.degruyter:
-            jids[JATS_SPRINGER_PUBTYPE.electronic.value] = [
-                JATS_XPATHS["journal-issn"].format(
-                    pubtype=JATS_SPRINGER_PUBTYPE.electronic.value
-                )
-            ]
-        else:
-            jids[self.pubtype.value] = [
-                JATS_XPATHS["journal-issn"].format(pubtype=self.pubtype.value),
-                JATS_XPATHS["journal-issn-pformat"].format(pubtype=self.pubtype.name),
-            ]
-
-        expression = JATS_XPATHS["journal-title"]
-        node = self.xpath(expression)
-        try:
-            pdict["title"] = node[0].strip()
-        except IndexError:
-            logger.debug("no journal title")
-
-        date_node = self.journal_date
-
-        if isinstance(date_node.month, int):
-            pdict["month"] = f"{date_node.month:02}"
-            if isinstance(date_node.day, int):
-                pdict["day"] = f"{date_node.day:02}"
-
-        if isinstance(date_node.year, int):
-            pdict["year"] = f"{date_node.year}"
-
-        for jtype, expressions in jids.items():
-            for expression in expressions:
-                node = self.xpath(expression)
-
-                if len(node) == 0:
-                    msg = f"no {jtype} journal_id ({self.pubtype.value})"
-                    logger.debug(msg)
-                    continue
-
-                jid = {"type": jtype, "id": node[0]}
-
-                if jtype == "basic":
-                    jid["type"] = "springer"
-                    if self.pubtype_source == PUBTYPE_SOURCES.degruyter:
-                        jid["type"] = "degruyter"
-                        jid["id"] += get_pubtype_suffix(self.pubtype.value)
-
-                if jid["type"] in JATS_SPRINGER_JOURNALTYPE.__members__:
-                    jid["type"] = JATS_SPRINGER_JOURNALTYPE[jid["type"]].value
-
-                pdict["journal_ids"].append(jid)
-
-        publisher = {}
-
-        expression = JATS_XPATHS["publisher-name"]
-        node = self.xpath(expression)
-        try:
-            publisher["name"] = node[0].strip()
-        except IndexError:
-            logger.debug("no publisher name")
-
-        expression = JATS_XPATHS["publisher-place"]
-        node = self.xpath(expression)
-        try:
-            publisher["place"] = node[0].strip()
-        except IndexError:
-            logger.debug("no publisher place")
-
-        if len(publisher) > 0:
-            pdict["publisher"] = publisher
-
-        jdata = {
-            "journal-volume": "volume",
-            "journal-issue": "issue",
-            "journal-start_page": "start_page",
-            "journal-end_page": "end_page",
-        }
-
-        for xkey, attr in jdata.items():
-            expression = JATS_XPATHS[xkey]
-            node = self.xpath(expression)
-            try:
-                pdict[attr] = node[0]
-            except IndexError:
-                logger.debug(f"no journal {attr}")
-
-        return pdict
+        return self._journal.as_dict()
 
     @property
     def jdict(self):
@@ -369,9 +246,9 @@ class JatsArticle:
         }
 
         if isinstance(self.dateOfProduction, JatsDate) and isinstance(
-            self.journal_date, JatsDate
+            self._journal.date, JatsDate
         ):
-            if self.dateOfProduction.todate() != self.journal_date.todate():
+            if self.dateOfProduction.todate() != self._journal.date.todate():
                 jdict["dateOfProduction"] = str(self.dateOfProduction)
 
         if self.pubtype.value == JATS_SPRINGER_PUBTYPE.electronic.value:

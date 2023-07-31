@@ -37,6 +37,9 @@ class IConverter(Interface):
 class IJournal(Interface):
     """Journal"""
 
+    def as_dict(self):
+        """Dict representation"""
+
     journal_ids = Attribute("List of journal identifier")
     title = Attribute("Journal title")
     year = Attribute("Year")
