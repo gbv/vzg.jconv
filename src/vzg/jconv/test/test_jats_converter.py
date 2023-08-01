@@ -35,6 +35,7 @@ class AricleConverter(unittest.TestCase):
         self.fpaths = {
             "emerald": Path("data/tests/emerald/article_emerald.xml"),
             "degruyter": Path("data/tests/degruyter/article.xml"),
+            "degruyter_abbrev": Path("data/tests/degruyter/article_abbrev.xml"),
             "springer": Path("data/tests/springer/article.xml"),
         }
 
@@ -99,6 +100,19 @@ class AricleConverter(unittest.TestCase):
     def test06(self):
         """validate degruyter"""
         jconv = JatsConverter(self.fpaths["degruyter"], validate=True)
+
+        self.assertTrue(len(jconv.articles) == 0, "articles")
+
+        jconv.run()
+
+        self.assertTrue(len(jconv.articles) == 2, "articles")
+
+        for article in jconv.articles:
+            self.assertIsInstance(article, JatsArticle, "article")
+
+    def test07(self):
+        """validate degruyter abbrev"""
+        jconv = JatsConverter(self.fpaths["degruyter_abbrev"], validate=True)
 
         self.assertTrue(len(jconv.articles) == 0, "articles")
 
