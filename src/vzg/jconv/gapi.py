@@ -75,7 +75,7 @@ JATS_XPATHS["primary_lang_code"] = "//article/@xml:lang"
 JATS_XPATHS["journal-title"] = "//journal-meta/journal-title-group/journal-title/text()"
 JATS_XPATHS[
     "abbrev-journal-title"
-] = """//journal-meta/journal-title-group/abbrev-journal-title[@abbrev-type="full"]/text()"""
+] = """//journal-meta/descendant::abbrev-journal-title[@abbrev-type="full"]/text()"""
 JATS_XPATHS["pub-date"] = """//article-meta/pub-date[@date-type="{pubtype}"]"""
 JATS_XPATHS["pub-date-pubtype"] = """//article-meta/pub-date[@pub-type]"""
 JATS_XPATHS[
