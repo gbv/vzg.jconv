@@ -10,13 +10,16 @@
 
 # Imports
 from setuptools import setup, find_packages
+from pathlib import Path
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = "plaintext"
 
 
 def gc(fname):
-    return open(fname).read()
+    mod_directory = Path(__file__).parent
+    fpath = mod_directory / fname
+    return fpath.read_text()
 
 
 setup(
@@ -25,6 +28,8 @@ setup(
     author="Marc-J. Tegethoff",
     author_email="tegethoff@gbv.de",
     description="Python library to create JSON Data",
+    long_description=gc("README.md"),
+    long_description_content_type="text/markdown",
     keywords="VZG Python JSON XML JAST",
     classifiers=[
         "Intended Audience :: Developers",
