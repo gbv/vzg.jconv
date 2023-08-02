@@ -121,7 +121,7 @@ class JatsArticle:
         logger = logging.getLogger(__name__)
 
         stms = ("article-copyright", "article-copyright-short")
-        copyr = ""
+        copyr = "no copyright information available"
 
         for stm in stms:
             nodes = self.xpath(JATS_XPATHS[stm])
