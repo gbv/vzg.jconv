@@ -25,6 +25,12 @@ class IArticle(Interface):
     title = Attribute("Article Title")
 
 
+class IArchive(Interface):
+    """Exchange Container"""
+
+    converters = Attribute("List of IConverter objects")
+
+
 class IConverter(Interface):
     """Converter"""
 
