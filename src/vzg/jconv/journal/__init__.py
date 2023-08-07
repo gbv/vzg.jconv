@@ -16,7 +16,6 @@ from vzg.jconv.interfaces import IJournal
 from vzg.jconv.gapi import NAMESPACES
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 from vzg.jconv.gapi import PUBTYPE_SOURCES
-from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE, PUBTYPE_SOURCES
 from vzg.jconv.gapi import JATS_SPRINGER_JOURNALTYPE
 from vzg.jconv.gapi import JATS_XPATHS
 from vzg.jconv.utils.date import JatsDate
@@ -72,13 +71,15 @@ class JatsJournal:
 
         for pubtype in JATS_SPRINGER_PUBTYPE:
             if self.article.pubtype_source == PUBTYPE_SOURCES.springer:
-                expression = JATS_XPATHS["pub-date-format"].format(pubtype=pubtype.name)
+                expression = JATS_XPATHS["pub-date-format"].format(
+                    pubtype=pubtype.name)
             elif self.article.pubtype_source == PUBTYPE_SOURCES.degruyter:
                 expression = JATS_XPATHS["pub-date-pubtype-val"].format(
                     pubtype=pubtype.value
                 )
             else:
-                expression = JATS_XPATHS["pub-date"].format(pubtype=pubtype.value)
+                expression = JATS_XPATHS["pub-date"].format(
+                    pubtype=pubtype.value)
 
             node = self.xpath(expression)
 
@@ -100,7 +101,8 @@ class JatsJournal:
             "basic": [JATS_XPATHS["journal-id"].format(journaltype="publisher-id")],
             "doi": [JATS_XPATHS["journal-id"].format(journaltype="doi")],
             self.article.pubtype.value: [
-                JATS_XPATHS["journal-issn"].format(pubtype=self.article.pubtype.value),
+                JATS_XPATHS["journal-issn"].format(
+                    pubtype=self.article.pubtype.value),
                 JATS_XPATHS["journal-issn-pformat"].format(
                     pubtype=self.article.pubtype.name
                 ),
@@ -149,7 +151,8 @@ class JatsJournal:
                     jid["type"] = "springer"
                     if self.article.pubtype_source == PUBTYPE_SOURCES.degruyter:
                         jid["type"] = "degruyter"
-                        jid["id"] += get_pubtype_suffix(self.article.pubtype.value)
+                        jid["id"] += get_pubtype_suffix(
+                            self.article.pubtype.value)
 
                 if jid["type"] in JATS_SPRINGER_JOURNALTYPE.__members__:
                     jid["type"] = JATS_SPRINGER_JOURNALTYPE[jid["type"]].value
