@@ -41,6 +41,8 @@ class ArchiveSpringer:
                 msg = f"Bearbteite {zinfo.filename} ({i})"
                 logger.debug(msg)
 
+                self.converter_kwargs["name"] = zinfo.filename
+
                 with tempfile.NamedTemporaryFile("w+b") as tmpfh:
                     tmpfh.write(zfh.read(zinfo))
                     tmpfh.flush()

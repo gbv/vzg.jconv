@@ -26,7 +26,9 @@ class TestSpringer(unittest.TestCase):
 
     def setUp(self) -> None:
         self.archive = Path("data/tests/springer/test_archive.zip")
-        self.article = Path("data/tests/springer/article.xml")
+
+        self.fpath = "data/tests/springer/article.xml"
+        self.article = Path(self.fpath)
 
         with zipfile.ZipFile(self.archive, "w") as zfh:
             zfh.write(self.article)
@@ -60,3 +62,4 @@ class TestSpringer(unittest.TestCase):
         for conv in archive.converters:
             self.assertIn(IConverter, providedBy(conv), "IConverter")
             self.assertIsInstance(conv, JatsConverter, "Konverter")
+            self.assertEqual(conv.name, self.fpath, "Name")

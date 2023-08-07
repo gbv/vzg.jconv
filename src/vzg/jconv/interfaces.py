@@ -35,6 +35,7 @@ class IConverter(Interface):
     """Converter"""
 
     articles = Attribute("List of IArticle objects")
+    name = Attribute("Optional name of the source file")
 
     def run(self):
         """Start the conversion"""
