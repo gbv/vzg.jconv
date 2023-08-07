@@ -3,7 +3,7 @@
 
 ##############################################################################
 #
-# Copyright (c) 2020 Verbundzentrale des GBV.
+# Copyright (c) 2020-2023 Verbundzentrale des GBV.
 # All Rights Reserved.
 #
 ##############################################################################
@@ -14,6 +14,7 @@ import logging
 from pathlib import Path
 import zipfile
 import tempfile
+from vzg.jconv.archives.springer import ArchiveSpringer
 from vzg.jconv.converter.jats import JatsConverter
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
@@ -87,50 +88,36 @@ def jats(options):
         opath.mkdir(0o755, parents=True)
 
     with zipfile.ZipFile(dst, "w") as jsonarchive:
-        with zipfile.ZipFile(jpath) as xmlarchive:
-            num_xml = 0
-            for name in xmlarchive.namelist():
-                num_xml += 1
+        converter_kwargs = {"validate": options.validate}
+        if options.publisher != "":
+            converter_kwargs["publisher"] = options.publisher
 
-            num_xml = float(num_xml)
+        xmlarchive = ArchiveSpringer(jpath, converter_kwargs=converter_kwargs)
+        num_xml = float(xmlarchive.num_files)
 
-            for i, zipinfo in enumerate(xmlarchive.infolist()):
-                with tempfile.NamedTemporaryFile("w+b") as tmpfh:
-                    tmpfh.write(xmlarchive.read(zipinfo))
-                    tmpfh.flush()
+        for i, jconv in enumerate(xmlarchive.converters):
+            xpercent = i / num_xml * 100
+            msg = f"{jconv.name} ({xpercent:.2f}%)"
+            logger.info(msg)
 
-                    jatspath = Path(tmpfh.name)
+            jconv.run()
 
-                    xpercent = i / num_xml * 100
-                    msg = f"{zipinfo.filename} ({xpercent:.2f}%)"
-                    logger.info(msg)
+            anum = len(jconv.articles)
+            msg = f"\t{anum} article(s)"
+            logger.info(msg)
 
-                    if options.publisher == "":
-                        jconv = JatsConverter(jatspath, validate=options.validate)
-                    else:
-                        jconv = JatsConverter(
-                            jatspath,
-                            publisher=options.publisher,
-                            validate=options.validate,
-                        )
-                    jconv.run()
+            if options.dry_run is False:
+                for j, article in enumerate(jconv.articles):
+                    aname = f"{deliverysignature}-{i}-{j}.json"
+                    logger.info(aname)
+                    jsonarchive.writestr(
+                        aname, article.json, compress_type=zipfile.ZIP_DEFLATED
+                    )
 
-                    anum = len(jconv.articles)
-                    msg = f"\t{anum} article(s)"
-                    logger.info(msg)
-
-                    if options.dry_run is False:
-                        for j, article in enumerate(jconv.articles):
-                            aname = f"{deliverysignature}-{i}-{j}.json"
-                            logger.info(aname)
-                            jsonarchive.writestr(
-                                aname, article.json, compress_type=zipfile.ZIP_DEFLATED
-                            )
-
-                    if options.stop and jconv.validation_failed:
-                        msg = "Validation problem"
-                        logger.info(msg)
-                        break
+            if options.stop and jconv.validation_failed:
+                msg = "Validation problem"
+                logger.info(msg)
+                break
 
 
 def run():
