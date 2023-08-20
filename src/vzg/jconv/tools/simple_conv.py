@@ -119,6 +119,8 @@ def jats(options):
                 logger.info(msg)
                 break
 
+            del jconv
+
 
 def run():
     """Start the application"""
