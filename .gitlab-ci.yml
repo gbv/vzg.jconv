@@ -21,3 +21,15 @@ py11-pytest:
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
     - tar xvzf .secure_files/conv_test.tar.gz
     - pytest --pyargs vzg.jconv
+
+py12-pytest:
+  image:
+    name: python:3.12
+    pull_policy: if-not-present
+  script:
+    - apt-get update -q -y
+    - pip install pytest
+    - pip install .
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+    - tar xvzf .secure_files/conv_test.tar.gz
+    - pytest --pyargs vzg.jconv
