@@ -9,10 +9,12 @@
 ##############################################################################
 """
 
+import datetime
 import unittest
 import zipfile
 from pathlib import Path
 from zope.interface import providedBy
+from vzg.jconv.archives.oai import ArchiveOAIDC
 from vzg.jconv.archives.springer import ArchiveSpringer
 from vzg.jconv.converter.jats import JatsConverter
 from vzg.jconv.interfaces import IConverter
@@ -63,3 +65,40 @@ class TestSpringer(unittest.TestCase):
             self.assertIn(IConverter, providedBy(conv), "IConverter")
             self.assertIsInstance(conv, JatsConverter, "Konverter")
             self.assertEqual(conv.name, self.fpath, "Name")
+
+
+class TestOAIDC(unittest.TestCase):
+
+    def setUp(self) -> None:
+        # self.baseurl = "https://oai.openedition.org"
+        self.baseurl = Path(
+            "data/tests/oai/response.xml").absolute().as_posix()
+
+        self.from_date = datetime.datetime(2023, 10, 9)
+        self.until_date = datetime.datetime(2023, 10, 10)
+
+    def test_num(self):
+        """"""
+        archive = ArchiveOAIDC(self.baseurl,
+                               local_file=True,
+                               from_date=self.from_date,
+                               until_date=self.until_date)
+
+        self.assertEqual(archive.num_files, 325, "Anzahl der Dateien")
+
+    def test_converter(self):
+        """"""
+        archive = ArchiveOAIDC(self.baseurl,
+                               local_file=True,
+                               from_date=self.from_date,
+                               until_date=self.until_date)
+
+        i = 0
+
+        for conv in archive.converters:
+            # print(conv)
+
+            if i >= 20:
+                break
+
+            i += 1
