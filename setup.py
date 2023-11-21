@@ -51,8 +51,8 @@ setup(
     license="GNU Affero General Public License v3",
     package_dir={"": "src"},
     namespace_packages=["vzg"],
-    install_requires=["jsonschema", "lxml",
-                      "setuptools", "wheel", "zope.interface"],
+    install_requires=["extruct", "jsonschema", "lxml", "pyoai",
+                      "setuptools", "w3lib", "wheel", "zope.interface"],
     zip_safe=False,
     python_requires=">=3.10",
     entry_points={"console_scripts": [
