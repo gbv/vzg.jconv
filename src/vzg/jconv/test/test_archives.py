@@ -17,6 +17,7 @@ from zope.interface import providedBy
 from vzg.jconv.archives.oai import ArchiveOAIDC
 from vzg.jconv.archives.springer import ArchiveSpringer
 from vzg.jconv.converter.jats import JatsConverter
+from vzg.jconv.converter.oai import OAIDCConverter
 from vzg.jconv.interfaces import IConverter
 
 
@@ -93,12 +94,9 @@ class TestOAIDC(unittest.TestCase):
                                from_date=self.from_date,
                                until_date=self.until_date)
 
-        i = 0
-
-        for conv in archive.converters:
-            # print(conv)
+        for i, conv in enumerate(archive.converters):
+            self.assertIn(IConverter, providedBy(conv), "IConverter")
+            self.assertIsInstance(conv, OAIDCConverter, "Konverter")
 
             if i >= 20:
                 break
-
-            i += 1
