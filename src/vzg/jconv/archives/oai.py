@@ -16,7 +16,9 @@ from oaipmh.metadata import MetadataRegistry
 from oaipmh.metadata import MetadataReader
 from typing import Generator
 from zope.interface import implementer
+from vzg.jconv.gapi import NAMESPACES, OAI_ARTICLES_TYPES
 from vzg.jconv.interfaces import IArchive
+from vzg.jconv.converter.oai import OAIDCConverter
 
 
 __author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
@@ -43,13 +45,10 @@ class OAIClient(Client):
     def ListRecords_impl(self, args, tree):
         logger = logging.getLogger(__name__)
 
-        namespaces = {"oai": "http://www.openarchives.org/OAI/2.0/",
-                      "oai_dc": "http://www.openarchives.org/OAI/2.0/oai_dc/"}
-
         stm = "string(./oai:ListRecords/oai:resumptionToken/@completeListSize)"
 
         try:
-            self.__num_records__ = tree.xpath(stm, namespaces=namespaces)
+            self.__num_records__ = tree.xpath(stm, namespaces=NAMESPACES)
         except Exception:
             logger.error("No resumptionToken", exc_info=True)
 
@@ -64,7 +63,8 @@ class ArchiveOAIDC:
                  from_date: datetime.datetime,
                  until_date: datetime.datetime,
                  local_file: bool = False,
-                 converter_kwargs: dict = {}) -> None:
+                 converter_kwargs: dict = {"article_type": OAI_ARTICLES_TYPES.unknown,
+                                           "validate": False}) -> None:
         self.baseurl = baseurl
         self.from_date = from_date
         self.until_date = until_date
@@ -99,10 +99,13 @@ class ArchiveOAIDC:
         self.registry = MetadataRegistry()
         self.registry.registerReader('oai_dc', oai_dc_reader)
 
-        self.__article_type__ = ['info:eu-repo/semantics/article', 'article']
-
     @property
-    def converters(self) -> Generator[dict, None, None]:
+    def converters(self) -> Generator[OAIDCConverter, None, None]:
+        logger = logging.getLogger(__name__)
+
+        max_articles = self.num_files
+        i = 0
+
         client = OAIClient(self.baseurl,
                            self.registry,
                            local_file=self.local_file)
@@ -110,13 +113,29 @@ class ArchiveOAIDC:
         for header, record, other in client.listRecords(metadataPrefix=self.metadataPrefix,
                                                         from_=self.from_date,
                                                         until=self.until_date):
+            i += 1
+
+            if i >= max_articles:
+                break
+
             if not record:
                 continue
 
-            if record.getField("type") != self.__article_type__:
+            try:
+                oiaconv = OAIDCConverter(header,
+                                         record,
+                                         **self.converter_kwargs)
+            except (KeyError,
+                    ValueError,
+                    IndexError,
+                    OSError,
+                    TypeError):
+                msg = f"Konvertierungsproblem in {record}"
+                logger.error(msg, exc_info=True)
+
                 continue
 
-            yield record
+            yield oiaconv
 
     @property
     def num_files(self) -> int:

@@ -17,9 +17,12 @@ __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = "plaintext"
 
 
-__schema_path__ = Path(__file__).parent.absolute() / "schema" / "article_schema.json"
+__schema_path__ = Path(__file__).parent.absolute() / \
+    "schema" / "article_schema.json"
 
 NAMESPACES = {
+    "oai": "http://www.openarchives.org/OAI/2.0/",
+    "oai_dc": "http://www.openarchives.org/OAI/2.0/oai_dc/",
     "xml": "http://www.w3.org/XML/1998/namespace",
     "xlink": "http://www.w3.org/1999/xlink",
     "mml": "http://www.w3.org/1998/Math/MathML",
@@ -27,6 +30,13 @@ NAMESPACES = {
 
 with open(__schema_path__, "rt") as fh:
     JSON_SCHEMA = json.load(fh)
+
+
+class OAI_ARTICLES_TYPES(Enum):
+
+    cairn = auto()
+    openedition = auto()
+    unknown = auto()
 
 
 class JATS_SPRINGER_PUBTYPE(Enum):
