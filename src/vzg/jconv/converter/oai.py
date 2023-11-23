@@ -66,7 +66,7 @@ class OAIArtcile_Base:
             "journal": self.journal,
             "persons": self.persons,
             "primary_id": self.primary_id,
-            "subject_terms": [],
+            "subject_terms": self.subject_terms,
             "title": self.title,
             "urls": []
         }
