@@ -132,8 +132,14 @@ class OAIArtcile_Base:
         for subject in self.record.getField('subject'):
             try:
                 subjectTerm = {}
-                subjectTerm['lang_code'] = self.iso639.i1toi2[self.record.getField('language')[
-                    0]]
+
+                lang = self.record.getField('language')[0]
+
+                if lang in self.iso639.i2toi1:
+                    subjectTerm['lang_code'] = lang
+                else:
+                    subjectTerm['lang_code'] = self.iso639.i1toi2[lang]
+
                 subjectTerm['scheme'] = 'OpenEdition'
                 subjectTerm['terms'] = []
                 for subjectPart in subject.split(' / '):
@@ -204,19 +210,22 @@ class OAIArtcile_Cairn(OAIArtcile_Base):
         journal = {}
 
         for source in self.record.getField('source'):
-            sourceParts = source.split('|')
-            sourceDateParts = sourceParts[3].split('-')
-            sourcePagesParts = sourceParts[4].replace('p. ', '').split('-')
-            journal = {
-                'day': sourceDateParts[2].strip(),
-                'end_page': sourcePagesParts[1].strip(),
-                'issue': sourceParts[1].replace('° ', '').strip(),
-                'month': sourceDateParts[1].strip(),
-                'start_page': sourcePagesParts[0].strip(),
-                'title': sourceParts[0].strip(),
-                'volume': sourceParts[2].strip(),
-                'year': sourceDateParts[0].strip(),
-            }
+            try:
+                sourceParts = source.split('|')
+                sourceDateParts = sourceParts[3].split('-')
+                sourcePagesParts = sourceParts[4].replace('p. ', '').split('-')
+                journal = {
+                    'day': sourceDateParts[2].strip(),
+                    'end_page': sourcePagesParts[1].strip(),
+                    'issue': sourceParts[1].replace('° ', '').strip(),
+                    'month': sourceDateParts[1].strip(),
+                    'start_page': sourcePagesParts[0].strip(),
+                    'title': sourceParts[0].strip(),
+                    'volume': sourceParts[2].strip(),
+                    'year': sourceDateParts[0].strip(),
+                }
+            except IndexError:
+                pass
 
         return journal
 
