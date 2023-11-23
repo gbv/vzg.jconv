@@ -104,12 +104,15 @@ class OAIArtcile_Base:
         persons = []
 
         for creator in self.record.getField('creator'):
-            creatorParts = creator.split(',')
-            persons.append({
-                'firstname': creatorParts[1].strip(),
-                'lastname': creatorParts[0].strip(),
-                'fullname': creatorParts[1].strip() + ' ' + creatorParts[0].strip(),
-            })
+            try:
+                creatorParts = creator.split(',')
+                persons.append({
+                    'firstname': creatorParts[1].strip(),
+                    'lastname': creatorParts[0].strip(),
+                    'fullname': creatorParts[1].strip() + ' ' + creatorParts[0].strip(),
+                })
+            except IndexError:
+                pass
 
         return persons
 
