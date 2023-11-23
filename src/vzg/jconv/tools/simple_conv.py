@@ -10,12 +10,18 @@
 """
 
 # Imports
+import datetime
 import logging
+import uuid
 from pathlib import Path
 import zipfile
 import tempfile
 from vzg.jconv.archives.springer import ArchiveSpringer
+from vzg.jconv.archives.oai import ArchiveOAIDC
 from vzg.jconv.converter.jats import JatsConverter
+from vzg.jconv.converter.oai import OAIDCConverter
+from vzg.jconv.gapi import OAI_ARTICLES_TYPES
+
 
 __author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
 __docformat__ = "plaintext"
@@ -75,8 +81,6 @@ def fromarchive(options):
 
 def jats(options):
     """Use a ZIP Archive as source."""
-    import uuid
-
     logger = logging.getLogger(__name__)
 
     jpath = Path(options.jfiles[0]).absolute()
@@ -122,6 +126,54 @@ def jats(options):
             del jconv
 
 
+def oai(options):
+    """Use a OAI request as source"""
+    logger = logging.getLogger(__name__)
+
+    deliverysignature = uuid.uuid4()
+    opath = Path(options.outdir).absolute()
+
+    atype = getattr(OAI_ARTICLES_TYPES,
+                    options.publisher,
+                    OAI_ARTICLES_TYPES.unknown)
+    from_date = datetime.datetime(2023, 10, 9)
+    until_date = datetime.datetime(2023, 10, 10)
+
+    archive = ArchiveOAIDC(options.url[0],
+                           from_date=from_date,
+                           until_date=until_date,
+                           converter_kwargs={"article_type": atype,
+                                             "validate": False})
+    num_res = float(archive.num_files)
+
+    for i, conv in enumerate(archive.converters):
+        xpercent = i / num_res * 100
+        msg = f"{conv.header.identifier()} ({xpercent:.2f}%)"
+        logger.info(msg)
+
+        conv.run()
+
+        anum = len(conv.articles)
+        msg = f"\t{anum} article(s)"
+        logger.info(msg)
+
+        if options.dry_run is False:
+            for j, article in enumerate(conv.articles):
+                aname = f"{deliverysignature}-{i}-{j}.json"
+                logger.info(aname)
+                jpath = opath / aname
+
+                with jpath.open("w") as jfh:
+                    jfh.write(article.json)
+
+        if options.stop and conv.validation_failed:
+            msg = "Validation problem"
+            logger.info(msg)
+            break
+
+        del conv
+
+
 def run():
     """Start the application"""
     from argparse import ArgumentParser
@@ -131,6 +183,66 @@ def run():
     parser = ArgumentParser(description=description)
 
     subparsers = parser.add_subparsers()
+
+    parser_oai = subparsers.add_parser(
+        "oai", help="Convert a OAI request"
+    )
+
+    parser_oai.add_argument(
+        "-n",
+        "--dry-run",
+        dest="dry_run",
+        action="store_true",
+        default=False,
+        help="Do nothing",
+    )
+
+    parser_oai.add_argument(
+        "-p",
+        "--publisher",
+        dest="publisher",
+        metavar="Publisher",
+        type=str,
+        required=False,
+        default="unknown",
+        help="The name of the publisher. Values: openedition",
+    )
+
+    parser_oai.add_argument(
+        "-o",
+        "--output-directory",
+        dest="outdir",
+        metavar="Output directory",
+        type=str,
+        default="output",
+        help="Directory of JSON files",
+    )
+
+    parser_oai.add_argument(
+        "--stop",
+        dest="stop",
+        action="store_true",
+        default=False,
+        help="Stop if JSON Schema Validation fails",
+    )
+
+    parser_oai.add_argument(
+        "--validate",
+        dest="validate",
+        action="store_true",
+        default=False,
+        help="JSON Schema Validation",
+    )
+
+    parser_oai.add_argument(
+        dest="url",
+        metavar="URL",
+        type=str,
+        nargs=1,
+        help="URL of the OAI request",
+    )
+
+    parser_oai.set_defaults(func=oai)
 
     parser_springer = subparsers.add_parser(
         "jats", help="Convert JATS files from ZIP files"
