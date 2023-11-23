@@ -24,17 +24,7 @@ __docformat__ = 'plaintext'
 
 
 @implementer(IArticle)
-class OAIArtcile_Cairn:
-
-    def __init__(self, header, record) -> None:
-        self.header = header
-        self.record = record
-
-        self.iso639 = ISO_639()
-
-
-@implementer(IArticle)
-class OAIArtcile_Openedition:
+class OAIArtcile_Base:
 
     def __init__(self, header, record) -> None:
         self.header = header
@@ -76,7 +66,7 @@ class OAIArtcile_Openedition:
             "journal": self.journal,
             "persons": self.persons,
             "primary_id": self.primary_id,
-            "subject_terms": self.subject_terms,
+            "subject_terms": [],
             "title": self.title,
             "urls": []
         }
@@ -159,6 +149,92 @@ class OAIArtcile_Openedition:
         return self.record.getField('title')[0]
 
 
+@implementer(IArticle)
+class OAIArtcile_Cairn(OAIArtcile_Base):
+
+    def __init__(self, header, record) -> None:
+        super().__init__(header, record)
+
+    @property
+    def copyright(self) -> str:
+        """Article copyright"""
+        copyright = ""
+
+        try:
+            copyright = self.record.getField('rights')[0]
+        except IndexError:
+            pass
+
+        return copyright
+
+    @property
+    def date_of_production(self) -> str:
+        date_of_production = ""
+
+        try:
+            date_of_production = self.record.getField('date')[0]
+        except IndexError:
+            pass
+
+        return date_of_production
+
+    @property
+    def jdict(self):
+        """"""
+        jdict = {
+            "abstracts": self.abstracts,
+            'copyright': self.copyright,
+            "dateOfProduction": self.date_of_production,
+            "lang_code": self.lang_code,
+            "journal": self.journal,
+            "persons": self.persons,
+            "primary_id": self.primary_id,
+            "subject_terms": self.subject_terms,
+            "title": self.title,
+            "urls": []
+        }
+
+        return jdict
+
+    @property
+    def journal(self) -> dict:
+        journal = {}
+
+        for source in self.record.getField('source'):
+            sourceParts = source.split('|')
+            sourceDateParts = sourceParts[3].split('-')
+            sourcePagesParts = sourceParts[4].replace('p. ', '').split('-')
+            journal = {
+                'day': sourceDateParts[2].strip(),
+                'end_page': sourcePagesParts[1].strip(),
+                'issue': sourceParts[1].replace('° ', '').strip(),
+                'month': sourceDateParts[1].strip(),
+                'start_page': sourcePagesParts[0].strip(),
+                'title': sourceParts[0].strip(),
+                'volume': sourceParts[2].strip(),
+                'year': sourceDateParts[0].strip(),
+            }
+
+        return journal
+
+    @property
+    def lang_code(self) -> list:
+        """Article lang_code"""
+        lang_code = []
+
+        for language in self.record.getField('language'):
+            lang_code.append(language)
+
+        return lang_code
+
+
+@implementer(IArticle)
+class OAIArtcile_Openedition(OAIArtcile_Base):
+
+    def __init__(self, header, record) -> None:
+        super().__init__(header, record)
+
+
 @implementer(IConverter)
 class OAIDCConverter:
     """_summary_
@@ -182,10 +258,10 @@ class OAIDCConverter:
     def run(self) -> None:
         logger = logging.getLogger(__name__)
 
-        if self.record.getField("type")[-1] != "article":
-            msg = "No article: {}".format(self.record.getField("type")[-1])
-            logger.debug(msg)
-            return None
+        # if self.record.getField("type")[-1] != "article":
+        #     msg = "No article: {}".format(self.record.getField("type")[-1])
+        #     logger.debug(msg)
+        #     return None
 
         article_cls = self.__article_types__.get(self.article_type, None)
 

@@ -205,7 +205,7 @@ def run():
         type=str,
         required=False,
         default="unknown",
-        help="The name of the publisher. Values: openedition",
+        help="""The name of the publisher. Values: [openedition|cairn]""",
     )
 
     parser_oai.add_argument(
