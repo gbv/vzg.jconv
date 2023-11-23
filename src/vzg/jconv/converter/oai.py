@@ -94,7 +94,10 @@ class OAIArtcile_Base:
         lang_code = []
 
         for language in self.record.getField('language'):
-            lang_code.append(self.iso639.i1toi2[language])
+            if language in self.iso639.i2toi1:
+                lang_code.append(language)
+            else:
+                lang_code.append(self.iso639.i1toi2[language])
 
         return lang_code
 
@@ -155,7 +158,12 @@ class OAIArtcile_Base:
     @property
     def title(self) -> str:
         """Article title"""
-        return self.record.getField('title')[0]
+        try:
+            return self.record.getField('title')[0]
+        except IndexError:
+            pass
+
+        return ''
 
 
 @implementer(IArticle)
