@@ -108,7 +108,11 @@ class ArchiveOAIDC:
 
         client = OAIClient(self.baseurl,
                            self.registry,
-                           local_file=self.local_file)
+                           local_file=self.local_file,
+                           force_http_get=True)
+
+        if not self.local_file:
+            client.updateGranularity()
 
         for header, record, other in client.listRecords(metadataPrefix=self.metadataPrefix,
                                                         from_=self.from_date,
@@ -143,7 +147,12 @@ class ArchiveOAIDC:
         """Number of articles"""
         client = OAIClient(self.baseurl,
                            self.registry,
-                           local_file=self.local_file)
+                           local_file=self.local_file,
+                           force_http_get=True)
+
+        if not self.local_file:
+            client.updateGranularity()
+
         client.listRecords(metadataPrefix=self.metadataPrefix,
                            from_=self.from_date,
                            until=self.until_date)
