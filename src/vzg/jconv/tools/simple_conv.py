@@ -136,12 +136,10 @@ def oai(options):
     atype = getattr(OAI_ARTICLES_TYPES,
                     options.publisher,
                     OAI_ARTICLES_TYPES.unknown)
-    from_date = datetime.datetime(2023, 10, 9)
-    until_date = datetime.datetime(2023, 10, 10)
 
     archive = ArchiveOAIDC(options.url[0],
-                           from_date=from_date,
-                           until_date=until_date,
+                           from_date=options.from_date,
+                           until_date=options.until_date,
                            converter_kwargs={"article_type": atype,
                                              "validate": options.validate})
     num_res = float(archive.num_files)
@@ -198,6 +196,14 @@ def run():
     )
 
     parser_oai.add_argument(
+        "--from-date",
+        dest="from_date",
+        default=datetime.datetime(2023, 10, 9),
+        help="From date",
+        type=datetime.datetime.fromisoformat
+    )
+
+    parser_oai.add_argument(
         "-p",
         "--publisher",
         dest="publisher",
@@ -224,6 +230,14 @@ def run():
         action="store_true",
         default=False,
         help="Stop if JSON Schema Validation fails",
+    )
+
+    parser_oai.add_argument(
+        "--until-date",
+        dest="until_date",
+        default=datetime.datetime(2023, 10, 10),
+        help="Until date",
+        type=datetime.datetime.fromisoformat
     )
 
     parser_oai.add_argument(
