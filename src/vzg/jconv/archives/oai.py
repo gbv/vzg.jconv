@@ -113,10 +113,11 @@ class ArchiveOAIDC:
         for header, record, other in client.listRecords(metadataPrefix=self.metadataPrefix,
                                                         from_=self.from_date,
                                                         until=self.until_date):
-            i += 1
 
             if i >= max_articles:
                 break
+
+            i += 1
 
             if not record:
                 continue
