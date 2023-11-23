@@ -143,7 +143,7 @@ def oai(options):
                            from_date=from_date,
                            until_date=until_date,
                            converter_kwargs={"article_type": atype,
-                                             "validate": False})
+                                             "validate": options.validate})
     num_res = float(archive.num_files)
 
     for i, conv in enumerate(archive.converters):
