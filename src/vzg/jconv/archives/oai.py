@@ -162,9 +162,9 @@ class ArchiveOAIDC:
                              from_=self.from_date,
                              until=self.until_date)
 
-        except (NoRecordsMatchError):
+        except NoRecordsMatchError:
           msg = f"Keine Records gefunden"
-          logger.error(msg, exc_info=True)
+          logger.error(msg)
           return 0
 
         return int(client.__num_records__)
