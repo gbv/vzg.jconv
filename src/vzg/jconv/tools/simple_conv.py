@@ -16,7 +16,6 @@ import uuid
 from pathlib import Path
 import zipfile
 import tempfile
-import lxml
 from vzg.jconv.archives.springer import ArchiveSpringer
 from vzg.jconv.archives.oai import ArchiveOAIDC
 from vzg.jconv.converter.jats import JatsConverter
