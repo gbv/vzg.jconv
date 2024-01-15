@@ -105,43 +105,44 @@ class ArchiveOAIDC:
         logger = logging.getLogger(__name__)
 
         max_articles = self.num_files
-        i = 0
+        if max_articles > 0:
+            i = 0
 
-        client = OAIClient(self.baseurl,
-                           self.registry,
-                           local_file=self.local_file,
-                           force_http_get=True)
+            client = OAIClient(self.baseurl,
+                               self.registry,
+                               local_file=self.local_file,
+                               force_http_get=True)
 
-        if not self.local_file:
-            client.updateGranularity()
+            if not self.local_file:
+                client.updateGranularity()
 
-        for header, record, other in client.listRecords(metadataPrefix=self.metadataPrefix,
-                                                        from_=self.from_date,
-                                                        until=self.until_date):
+            for header, record, other in client.listRecords(metadataPrefix=self.metadataPrefix,
+                                                            from_=self.from_date,
+                                                            until=self.until_date):
 
-            if i >= max_articles:
-                break
+                if i >= max_articles:
+                    break
 
-            i += 1
+                i += 1
 
-            if not record:
-                continue
+                if not record:
+                    continue
 
-            try:
-                oiaconv = OAIDCConverter(header,
-                                         record,
-                                         **self.converter_kwargs)
-            except (KeyError,
-                    ValueError,
-                    IndexError,
-                    OSError,
-                    TypeError):
-                msg = f"Konvertierungsproblem in {record}"
-                logger.error(msg, exc_info=True)
+                try:
+                    oiaconv = OAIDCConverter(header,
+                                             record,
+                                             **self.converter_kwargs)
+                except (KeyError,
+                        ValueError,
+                        IndexError,
+                        OSError,
+                        TypeError):
+                    msg = f"Konvertierungsproblem in {record}"
+                    logger.error(msg, exc_info=True)
 
-                continue
+                    continue
 
-            yield oiaconv
+                yield oiaconv
 
     @property
     def num_files(self) -> int:
