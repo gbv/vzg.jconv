@@ -14,6 +14,7 @@ import logging
 from oaipmh.client import Client
 from oaipmh.metadata import MetadataRegistry
 from oaipmh.metadata import MetadataReader
+from oaipmh.error import NoRecordsMatchError
 from typing import Generator
 from zope.interface import implementer
 from vzg.jconv.gapi import NAMESPACES, OAI_ARTICLES_TYPES
@@ -145,6 +146,8 @@ class ArchiveOAIDC:
     @property
     def num_files(self) -> int:
         """Number of articles"""
+        logger = logging.getLogger(__name__)
+
         client = OAIClient(self.baseurl,
                            self.registry,
                            local_file=self.local_file,
@@ -153,8 +156,14 @@ class ArchiveOAIDC:
         if not self.local_file:
             client.updateGranularity()
 
-        client.listRecords(metadataPrefix=self.metadataPrefix,
-                           from_=self.from_date,
-                           until=self.until_date)
+        try:
+          client.listRecords(metadataPrefix=self.metadataPrefix,
+                             from_=self.from_date,
+                             until=self.until_date)
+
+        except (NoRecordsMatchError):
+          msg = f"Keine Records gefunden"
+          logger.error(msg, exc_info=True)
+          return 0
 
         return int(client.__num_records__)
