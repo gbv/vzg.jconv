@@ -106,6 +106,9 @@ class ArchiveOAIDC:
 
         max_articles = self.num_files
         if max_articles > 0:
+            msg = f"Records gefunden: " + str(max_articles)
+            logger.error(msg)
+
             i = 0
 
             client = OAIClient(self.baseurl,
