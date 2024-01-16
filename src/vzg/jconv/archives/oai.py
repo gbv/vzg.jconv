@@ -128,6 +128,10 @@ class ArchiveOAIDC:
                 if not record:
                     continue
 
+                if self.converter_kwargs.get('article_type') == OAI_ARTICLES_TYPES.openedition:
+                    if not 'article' in record.getField('type'):
+                        continue
+
                 try:
                     oiaconv = OAIDCConverter(header,
                                              record,
