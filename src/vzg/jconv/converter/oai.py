@@ -79,16 +79,6 @@ class OAIArticle_Base:
         return json.dumps(self.jdict)
 
     @property
-    def journal(self) -> dict:
-        """Article journal"""
-        journal = {"title": 'Journal'}
-
-        recordDateParts = self.record.getField('date')[0].split('-')
-        journal['year'] = recordDateParts[0]
-
-        return journal
-
-    @property
     def lang_code(self) -> list:
         """Article lang_code"""
         lang_code = []
@@ -254,6 +244,17 @@ class OAIArticle_Openedition(OAIArticle_Base):
     def __init__(self, header, record) -> None:
         super().__init__(header, record)
 
+    @property
+    def journal(self) -> dict:
+        """Article journal"""
+        journal = {}
+
+        journal['title'] = self.record.getField('publisher')[0]
+
+        recordDateParts = self.record.getField('date')[0].split('-')
+        journal['year'] = recordDateParts[0]
+
+        return journal
 
 @implementer(IConverter)
 class OAIDCConverter:
