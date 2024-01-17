@@ -24,7 +24,7 @@ __docformat__ = 'plaintext'
 
 
 @implementer(IArticle)
-class OAIArtcile_Base:
+class OAIArticle_Base:
 
     def __init__(self, header, record) -> None:
         self.header = header
@@ -77,16 +77,6 @@ class OAIArtcile_Base:
     def json(self) -> str:
         """"""
         return json.dumps(self.jdict)
-
-    @property
-    def journal(self) -> dict:
-        """Article journal"""
-        journal = {"title": 'Journal'}
-
-        recordDateParts = self.record.getField('date')[0].split('-')
-        journal['year'] = recordDateParts[0]
-
-        return journal
 
     @property
     def lang_code(self) -> list:
@@ -167,7 +157,7 @@ class OAIArtcile_Base:
 
 
 @implementer(IArticle)
-class OAIArtcile_Cairn(OAIArtcile_Base):
+class OAIArticle_Cairn(OAIArticle_Base):
 
     def __init__(self, header, record) -> None:
         super().__init__(header, record)
@@ -249,11 +239,22 @@ class OAIArtcile_Cairn(OAIArtcile_Base):
 
 
 @implementer(IArticle)
-class OAIArtcile_Openedition(OAIArtcile_Base):
+class OAIArticle_Openedition(OAIArticle_Base):
 
     def __init__(self, header, record) -> None:
         super().__init__(header, record)
 
+    @property
+    def journal(self) -> dict:
+        """Article journal"""
+        journal = {}
+
+        journal['title'] = self.record.getField('publisher')[0]
+
+        recordDateParts = self.record.getField('date')[0].split('-')
+        journal['year'] = recordDateParts[0]
+
+        return journal
 
 @implementer(IConverter)
 class OAIDCConverter:
@@ -272,8 +273,8 @@ class OAIDCConverter:
 
         self.articles = []
 
-        self.__article_types__ = {OAI_ARTICLES_TYPES.cairn: OAIArtcile_Cairn,
-                                  OAI_ARTICLES_TYPES.openedition: OAIArtcile_Openedition}
+        self.__article_types__ = {OAI_ARTICLES_TYPES.cairn: OAIArticle_Cairn,
+                                  OAI_ARTICLES_TYPES.openedition: OAIArticle_Openedition}
 
     def run(self) -> None:
         logger = logging.getLogger(__name__)
