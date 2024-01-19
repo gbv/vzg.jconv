@@ -15,7 +15,7 @@ import unittest
 from pathlib import Path
 from zope.interface import providedBy
 from vzg.jconv.archives.oai import ArchiveOAIDC
-from vzg.jconv.converter.oai import OAIArtcile_Openedition, OAIArtcile_Cairn
+from vzg.jconv.converter.oai import OAIArticle_Openedition, OAIArticle_Cairn
 from vzg.jconv.interfaces import IArticle
 from vzg.jconv.gapi import OAI_ARTICLES_TYPES
 
@@ -52,7 +52,7 @@ class Cairn(unittest.TestCase):
             self.header = conv.header
             self.record = conv.record
 
-        self.article = OAIArtcile_Cairn(self.header, self.record)
+        self.article = OAIArticle_Cairn(self.header, self.record)
 
     def test_abstracts(self):
         """"""
@@ -73,7 +73,7 @@ class Cairn(unittest.TestCase):
         """"""
         self.assertIn(IArticle, providedBy(self.article), "IArticle")
         self.assertIsInstance(self.article,
-                              OAIArtcile_Cairn,
+                              OAIArticle_Cairn,
                               "Cairn Artikel")
 
     def test_journal(self):
@@ -126,13 +126,13 @@ class Openedition(unittest.TestCase):
             self.header = conv.header
             self.record = conv.record
 
-        self.article = OAIArtcile_Openedition(self.header, self.record)
+        self.article = OAIArticle_Openedition(self.header, self.record)
 
     def test_interface(self):
         """"""
         self.assertIn(IArticle, providedBy(self.article), "IArticle")
         self.assertIsInstance(self.article,
-                              OAIArtcile_Openedition,
+                              OAIArticle_Openedition,
                               "Openedition Artikel")
 
 
@@ -162,7 +162,7 @@ class OpeneditionValidate(unittest.TestCase):
             self.header = conv.header
             self.record = conv.record
 
-        self.article = OAIArtcile_Openedition(self.header, self.record)
+        self.article = OAIArticle_Openedition(self.header, self.record)
 
     def test_abstracts(self):
         """"""
@@ -183,7 +183,7 @@ class OpeneditionValidate(unittest.TestCase):
         """"""
         self.assertIn(IArticle, providedBy(self.article), "IArticle")
         self.assertIsInstance(self.article,
-                              OAIArtcile_Openedition,
+                              OAIArticle_Openedition,
                               "Openedition Artikel")
 
     def test_journal(self):
