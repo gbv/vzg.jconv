@@ -54,6 +54,9 @@ class Cairn(unittest.TestCase):
 
         self.article = OAIArticle_Cairn(self.header, self.record)
 
+        with open("t1.json", "w") as fh:
+            json.dump(self.article.jdict, fh)
+
     def test_abstracts(self):
         """"""
         self.assertEqual(self.article.abstracts,

@@ -123,8 +123,6 @@ class TestClassDeGruyter(unittest.TestCase):
     def test06_journal_ids(self):
         journal = JatsJournal(self.article)
 
-        print(journal.ids)
-
         self.assertEqual(
             journal.ids,
             self.testdata["journal"]["journal_ids"],

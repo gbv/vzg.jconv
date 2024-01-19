@@ -9,9 +9,12 @@
 ##############################################################################
 """
 
+import codecs
 import datetime
 import logging
-from oaipmh.client import Client
+import urllib.request as urllib2
+from urllib.parse import urlencode
+from oaipmh.client import Client, retrieveFromUrlWaiting
 from oaipmh.metadata import MetadataRegistry
 from oaipmh.metadata import MetadataReader
 from oaipmh.error import NoRecordsMatchError
@@ -54,6 +57,28 @@ class OAIClient(Client):
             logger.error("No resumptionToken", exc_info=True)
 
         return super().ListRecords_impl(args, tree)
+    
+    def makeRequest(self, **kw):
+        """Either load a local XML file or actually retrieve XML from a server.
+        """
+        if self._local_file:
+            with codecs.open(self._base_url, 'r', 'utf-8') as xmlfile:
+                text = xmlfile.read()
+            return text
+        else:
+            # XXX include From header?
+            headers = {'User-Agent': 'pyoai'}
+            if self._credentials is not None:
+                headers['Authorization'] = 'Basic ' + self._credentials.strip()
+            if self._force_http_get:
+                request_url = '%s?%s' % (self._base_url, urlencode(kw))
+                request = urllib2.Request(request_url, headers=headers)
+            else:
+                binary_data = urlencode(kw).encode('utf-8')
+                request = urllib2.Request(
+                    self._base_url, data=binary_data, headers=headers)
+
+            return retrieveFromUrlWaiting(request)
 
 
 @implementer(IArchive)
@@ -119,7 +144,7 @@ class ArchiveOAIDC:
             for header, record, other in client.listRecords(metadataPrefix=self.metadataPrefix,
                                                             from_=self.from_date,
                                                             until=self.until_date):
-
+                
                 if i >= max_articles:
                     break
 

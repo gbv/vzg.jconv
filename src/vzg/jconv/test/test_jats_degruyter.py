@@ -59,7 +59,6 @@ class EPubArticle(unittest.TestCase):
 
     def test04(self):
         """journal"""
-        print(self.jobj.journal)
         self.assertEqual(self.jobj.journal, self.testdata["journal"], "journal")
 
     def test05(self):
