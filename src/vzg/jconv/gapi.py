@@ -23,6 +23,7 @@ __schema_path__ = Path(__file__).parent.absolute() / \
 NAMESPACES = {
     "oai": "http://www.openarchives.org/OAI/2.0/",
     "oai_dc": "http://www.openarchives.org/OAI/2.0/oai_dc/",
+    'dc': 'http://purl.org/dc/elements/1.1/',
     "xml": "http://www.w3.org/XML/1998/namespace",
     "xlink": "http://www.w3.org/1999/xlink",
     "mml": "http://www.w3.org/1998/Math/MathML",
@@ -136,3 +137,29 @@ JATS_XPATHS["abstracts-sec"] = "//article-meta/abstract/sec"
 JATS_XPATHS["abstracts-sec-node"] = ".//sec"
 JATS_XPATHS["subjects-lang_code"] = "//article-meta/kwd-group/@xml:lang"
 JATS_XPATHS["subjects"] = "//article-meta/kwd-group"
+
+OAI_DC_RECORD_XPATHS = {
+    'title':       ('textList', '//oai_dc:dc/dc:title/text()'),
+    'creator':     ('textList', '//oai_dc:dc/dc:creator/text()'),
+    'subject':     ('textList', '//oai_dc:dc/dc:subject/text()'),
+    'description': ('textList', '//oai_dc:dc/dc:description/text()'),
+    'description_language': ('textList', '//oai_dc:dc/dc:description/@xml:lang'),
+    'publisher':   ('textList', '//oai_dc:dc/dc:publisher/text()'),
+    'contributor': ('textList', '//oai_dc:dc/dc:contributor/text()'),
+    'date':        ('textList', '//oai_dc:dc/dc:date/text()'),
+    'type':        ('textList', '//oai_dc:dc/dc:type/text()'),
+    'format':      ('textList', '//oai_dc:dc/dc:format/text()'),
+    'identifier':  ('textList', '//oai_dc:dc/dc:identifier/text()'),
+    'source':      ('textList', '//oai_dc:dc/dc:source/text()'),
+    'language':    ('textList', '//oai_dc:dc/dc:language/text()'),
+    'relation':    ('textList', '//oai_dc:dc/dc:relation/text()'),
+    'coverage':    ('textList', '//oai_dc:dc/dc:coverage/text()'),
+    'rights':      ('textList', '//oai_dc:dc/dc:rights/text()')
+}
+
+OAI_DC_HEADER_XPATHS = {
+    "identifier": '//oai:header/oai:identifier[1]/text()',
+    "datestamp": '//oai:header/oai:datestamp/text()',
+    "setspec": '//oai:header/oai:setSpec/text()',
+    "deleted": "//oai:record/@status = 'deleted'"
+}
