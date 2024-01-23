@@ -25,23 +25,14 @@ class TestOAIDC(unittest.TestCase):
 
     def setUp(self) -> None:
         self.baseurl = Path(
-            "data/tests/oai/response.xml").absolute().as_posix()
-
-        self.from_date = datetime.datetime(2023, 10, 9)
-        self.until_date = datetime.datetime(2023, 10, 10)
+            "data/tests/oai/2024-01-23_10-59-52-001.zip").absolute().as_posix()
 
     def test_converter(self):
         """"""
-        archive = ArchiveOAIDC(self.baseurl,
-                               local_file=True,
-                               from_date=self.from_date,
-                               until_date=self.until_date)
+        archive = ArchiveOAIDC(self.baseurl)
 
         for i, conv in enumerate(archive.converters):
             self.assertIn(IConverter, providedBy(conv), "IConverter")
             self.assertIsInstance(conv, OAIDCConverter, "Konverter")
 
             conv.run()
-
-            if i >= 200:
-                break

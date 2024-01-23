@@ -27,22 +27,16 @@ class Cairn(unittest.TestCase):
 
     def setUp(self) -> None:
         self.baseurl = Path(
-            "data/tests/oai/cairn.xml").absolute().as_posix()
+            "data/tests/oai/cairn.zip").absolute().as_posix()
         self.jpath = Path("data/tests/oai/article_cairn.json")
 
         with open(self.jpath) as fh:
             self.testdata = json.load(fh)
 
-        self.from_date = datetime.datetime(2023, 10, 9)
-        self.until_date = datetime.datetime(2023, 10, 10)
-
         self.header = None
         self.record = None
 
         archive = ArchiveOAIDC(self.baseurl,
-                               local_file=True,
-                               from_date=self.from_date,
-                               until_date=self.until_date,
                                converter_kwargs={"article_type": OAI_ARTICLES_TYPES.cairn,
                                                  "validate": True})
 
@@ -105,18 +99,12 @@ class Openedition(unittest.TestCase):
 
     def setUp(self) -> None:
         self.baseurl = Path(
-            "data/tests/oai/openedition.xml").absolute().as_posix()
-
-        self.from_date = datetime.datetime(2023, 10, 9)
-        self.until_date = datetime.datetime(2023, 10, 10)
+            "data/tests/oai/openedition.zip").absolute().as_posix()
 
         self.header = None
         self.record = None
 
         archive = ArchiveOAIDC(self.baseurl,
-                               local_file=True,
-                               from_date=self.from_date,
-                               until_date=self.until_date,
                                converter_kwargs={"article_type": OAI_ARTICLES_TYPES.openedition,
                                                  "validate": False})
 
@@ -140,21 +128,16 @@ class OpeneditionValidate(unittest.TestCase):
 
     def setUp(self) -> None:
         self.baseurl = Path(
-            "data/tests/oai/openedition.xml").absolute().as_posix()
+            "data/tests/oai/openedition.zip").absolute().as_posix()
         self.jpath = Path("data/tests/oai/article_openedition.json")
 
         with open(self.jpath) as fh:
             self.testdata = json.load(fh)
 
-        self.from_date = datetime.datetime(2023, 10, 9)
-        self.until_date = datetime.datetime(2023, 10, 10)
         self.header = None
         self.record = None
 
         archive = ArchiveOAIDC(self.baseurl,
-                               local_file=True,
-                               from_date=self.from_date,
-                               until_date=self.until_date,
                                converter_kwargs={"article_type": OAI_ARTICLES_TYPES.openedition,
                                                  "validate": True})
 
