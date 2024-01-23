@@ -127,7 +127,7 @@ def jats(options):
 
 
 def oai(options):
-    """Use a OAI request as source"""
+    """Use a OAI responses as source"""
     logger = logging.getLogger(__name__)
 
     deliverysignature = uuid.uuid4()
@@ -137,16 +137,14 @@ def oai(options):
                     options.publisher,
                     OAI_ARTICLES_TYPES.unknown)
 
-    archive = ArchiveOAIDC(options.url[0],
-                           from_date=options.from_date,
-                           until_date=options.until_date,
+    archive = ArchiveOAIDC(options.zippath[0],
                            converter_kwargs={"article_type": atype,
                                              "validate": options.validate})
     num_res = float(archive.num_files)
 
     for i, conv in enumerate(archive.converters):
         xpercent = i / num_res * 100
-        msg = f"{conv.header.identifier()} ({xpercent:.2f}%)"
+        msg = f"{conv.header.identifier} ({xpercent:.2f}%)"
         logger.info(msg)
 
         conv.run()
@@ -183,7 +181,7 @@ def run():
     subparsers = parser.add_subparsers()
 
     parser_oai = subparsers.add_parser(
-        "oai", help="Convert a OAI request"
+        "oai", help="Convert OAI responses"
     )
 
     parser_oai.add_argument(
@@ -193,14 +191,6 @@ def run():
         action="store_true",
         default=False,
         help="Do nothing",
-    )
-
-    parser_oai.add_argument(
-        "--from-date",
-        dest="from_date",
-        default=datetime.datetime(2023, 10, 9),
-        help="From date",
-        type=datetime.datetime.fromisoformat
     )
 
     parser_oai.add_argument(
@@ -233,14 +223,6 @@ def run():
     )
 
     parser_oai.add_argument(
-        "--until-date",
-        dest="until_date",
-        default=datetime.datetime(2023, 10, 10),
-        help="Until date",
-        type=datetime.datetime.fromisoformat
-    )
-
-    parser_oai.add_argument(
         "--validate",
         dest="validate",
         action="store_true",
@@ -249,11 +231,11 @@ def run():
     )
 
     parser_oai.add_argument(
-        dest="url",
-        metavar="URL",
+        dest="zippath",
+        metavar="Zipfile",
         type=str,
         nargs=1,
-        help="URL of the OAI request",
+        help="Zipfile with OAI records",
     )
 
     parser_oai.set_defaults(func=oai)

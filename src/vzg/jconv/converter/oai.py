@@ -268,6 +268,7 @@ class OAIDCConverter:
         self.record = record
         self.article_type = article_type
         self.validate = validate
+        self.validation_failed = False
 
         self.articles = []
 
@@ -276,11 +277,6 @@ class OAIDCConverter:
 
     def run(self) -> None:
         logger = logging.getLogger(__name__)
-
-        # if self.record.getField("type")[-1] != "article":
-        #     msg = "No article: {}".format(self.record.getField("type")[-1])
-        #     logger.debug(msg)
-        #     return None
 
         article_cls = self.__article_types__.get(self.article_type, None)
 
