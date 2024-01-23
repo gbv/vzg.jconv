@@ -50,11 +50,8 @@ class OAIArticle_Base:
 
     @property
     def date_of_production(self) -> str:
-        datestamp = self.header.datestamp()
-        dstr = str(
-            datestamp.year) + '-' + str(datestamp.month).zfill(2) + '-' + str(datestamp.day).zfill(2)
-
-        return dstr
+        datestamp = self.header.datestamp
+        return f"{datestamp.year}-{datestamp.month:02}-{datestamp.day:02}"
 
     @property
     def jdict(self):
@@ -113,7 +110,7 @@ class OAIArticle_Base:
     def primary_id(self) -> dict:
         """Article primary_id
         """
-        pdict = {"type": "oai_id", "id": self.header.identifier()}
+        pdict = {"type": "oai_id", "id": self.header.identifier}
 
         return pdict
 
@@ -255,6 +252,7 @@ class OAIArticle_Openedition(OAIArticle_Base):
         journal['year'] = recordDateParts[0]
 
         return journal
+
 
 @implementer(IConverter)
 class OAIDCConverter:
