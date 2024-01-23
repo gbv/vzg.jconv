@@ -37,8 +37,17 @@ class Header:
 
     def __post_init__(self):
         self.identifier = self.__get_val__("identifier")
+
         dst = self.__get_val__("datestamp")
-        self.datestamp = datetime.datetime.fromisoformat(dst)
+
+        try:
+            self.datestamp = datetime.datetime.fromisoformat(dst)
+        except ValueError:
+            if dst[-1] == "Z":
+                dst = dst[0:-1]
+
+            self.datestamp = datetime.datetime.fromisoformat(dst)
+
         self.setspec = self.__get_val__("setspec", False)
         self.deleted = self.__get_val__("deleted")
 
@@ -115,7 +124,8 @@ class ArchiveOAIDC:
                         OSError,
                         TypeError):
 
-                    _path = self.archivepath.as_posix()
+                    _path = self.archivepath.as_posix() if isinstance(
+                        self.archivepath, Path) else self.archivepath
                     msg = "Konvertierungsproblem in "
                     msg += f"{_path}-> {zinfo.filename}"
                     logger.error(msg, exc_info=True)
