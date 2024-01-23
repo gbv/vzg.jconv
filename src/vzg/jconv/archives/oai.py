@@ -114,9 +114,10 @@ class ArchiveOAIDC:
                         IndexError,
                         OSError,
                         TypeError):
+
+                    _path = self.archivepath.as_posix()
                     msg = "Konvertierungsproblem in "
-                    msg += f"{self.archivepath.as_posix()
-                              } -> {zinfo.filename}"
+                    msg += f"{_path}-> {zinfo.filename}"
                     logger.error(msg, exc_info=True)
 
                     continue
