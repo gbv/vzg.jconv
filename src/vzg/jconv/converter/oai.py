@@ -61,6 +61,7 @@ class OAIArticle_Base:
             "dateOfProduction": self.date_of_production,
             "lang_code": self.lang_code,
             "journal": self.journal,
+            "other_ids": self.other_ids,
             "persons": self.persons,
             "primary_id": self.primary_id,
             "subject_terms": self.subject_terms,
@@ -87,6 +88,21 @@ class OAIArticle_Base:
                 lang_code.append(self.iso639.i1toi2[language])
 
         return lang_code
+
+    @property
+    def other_ids(self):
+        """Article other_ids"""
+        logger = logging.getLogger(__name__)
+
+        ids = []
+
+        for value in self.record.getField('identifier'):
+
+            if value.startswith("urn:doi:"):
+                pdict = {"type": "doi", "id": value.replace("urn:doi:", "")}
+                ids.append(pdict)
+
+        return ids
 
     @property
     def persons(self) -> list:
