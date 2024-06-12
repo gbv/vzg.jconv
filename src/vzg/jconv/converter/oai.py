@@ -66,7 +66,7 @@ class OAIArticle_Base:
             "primary_id": self.primary_id,
             "subject_terms": self.subject_terms,
             "title": self.title,
-            "urls": []
+            "urls": self.urls
         }
 
         return jdict
@@ -109,8 +109,6 @@ class OAIArticle_Base:
 
         if len(dois):
             ids = [{"type": "doi", "id": val} for val in dois]
-
-        print(ids)
 
         return ids
 
@@ -178,6 +176,30 @@ class OAIArticle_Base:
 
         return ''
 
+    @property
+    def urls(self) -> list:
+        urls = []
+        identifier = None
+        oaccess = False
+
+        for value in self.record.getField("identifier"):
+            identifier = value
+            break
+
+        for value in self.record.getField("rights"):
+            if value == "info:eu-repo/semantics/openAccess":
+                oaccess = True
+                break
+
+        if oaccess and identifier is not None:
+            urls.append({
+                "access_info": "OALizenz",
+                "scope": "34",
+                "url": identifier
+            })
+
+        return urls
+
 
 @implementer(IArticle)
 class OAIArticle_Cairn(OAIArticle_Base):
@@ -220,8 +242,7 @@ class OAIArticle_Cairn(OAIArticle_Base):
             "persons": self.persons,
             "primary_id": self.primary_id,
             "subject_terms": self.subject_terms,
-            "title": self.title,
-            "urls": []
+            "title": self.title
         }
 
         return jdict
@@ -288,7 +309,7 @@ class OAIArticle_Openedition(OAIArticle_Base):
         issn = list(set(issn))
         if len(issn) > 0:
             journal["journal_ids"] = [
-                {"id": val, "type": "eissn"} for val in issn]
+                {"id": val, "type": "issn"} for val in issn]
 
         return journal
 
