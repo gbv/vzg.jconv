@@ -171,8 +171,11 @@ class OpeneditionValidate(unittest.TestCase):
 
     def test_journal(self):
         """"""
-        self.assertEqual(self.article.journal,
-                         self.testdata["journal"], "journal")
+        self.assertEqual(self.article.journal["title"],
+                         self.testdata["journal"]["title"], "journal")
+
+        self.assertEqual(self.article.journal["year"],
+                         self.testdata["journal"]["year"], "journal")
 
     def test_persons(self):
         """"""
