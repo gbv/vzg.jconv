@@ -309,7 +309,7 @@ class OAIArticle_Openedition(OAIArticle_Base):
         issn = list(set(issn))
         if len(issn) > 0:
             journal["journal_ids"] = [
-                {"id": val, "type": "issn"} for val in issn]
+                {"id": val, "type": "eissn"} for val in issn]
 
         return journal
 
