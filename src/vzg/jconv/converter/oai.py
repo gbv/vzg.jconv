@@ -267,6 +267,14 @@ class OAIArticle_Openedition(OAIArticle_Base):
         recordDateParts = self.record.getField('date')[0].split('-')
         journal['year'] = recordDateParts[0]
 
+        for relation in self.record.getField('relation'):
+          if relation.startswith("info:eu-repo/semantics/reference/issn/"):
+            journal['journal_ids'].append(relation.replace('info:eu-repo/semantics/reference/issn/', ''))
+
+        for identifier in self.record.getField('identifier'):
+          if identifier.startswith("https://doi.org"):
+            journal['urls'].append(identifier)
+
         return journal
 
 
