@@ -96,11 +96,21 @@ class OAIArticle_Base:
 
         ids = []
 
+        doi_marker = ("urn:doi:", "https://doi.org/")
+        dois = []
+
         for value in self.record.getField('identifier'):
 
-            if value.startswith("urn:doi:"):
-                pdict = {"type": "doi", "id": value.replace("urn:doi:", "")}
-                ids.append(pdict)
+            for marker in doi_marker:
+                if value.startswith(marker):
+                    dois.append(value.replace(marker, ""))
+
+        dois = list(set(dois))
+
+        if len(dois):
+            ids = [{"type": "doi", "id": val} for val in dois]
+
+        print(ids)
 
         return ids
 
@@ -266,6 +276,19 @@ class OAIArticle_Openedition(OAIArticle_Base):
 
         recordDateParts = self.record.getField('date')[0].split('-')
         journal['year'] = recordDateParts[0]
+
+        # Identifier
+        issn = []
+
+        for relation in self.record.getField('relation'):
+            if relation.startswith("info:eu-repo/semantics/reference/issn/"):
+                issn.append(relation.replace(
+                    'info:eu-repo/semantics/reference/issn/', ''))
+
+        issn = list(set(issn))
+        if len(issn) > 0:
+            journal["journal_ids"] = [
+                {"id": val, "type": "eissn"} for val in issn]
 
         return journal
 
