@@ -15,8 +15,10 @@ import logging
 from zope.interface import implementer
 from vzg.jconv.gapi import JSON_SCHEMA
 from vzg.jconv.gapi import OAI_ARTICLES_TYPES
+from vzg.jconv.gapi import JATS_SPRINGER_JOURNALTYPE
 from vzg.jconv.interfaces import IArticle
 from vzg.jconv.interfaces import IConverter
+from vzg.jconv.journal import CairnJournal
 from vzg.jconv.langcode import ISO_639
 
 __author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
@@ -249,25 +251,15 @@ class OAIArticle_Cairn(OAIArticle_Base):
 
     @property
     def journal(self) -> dict:
+        logger = logging.getLogger(__name__)
+
         journal = {}
 
-        for source in self.record.getField('source'):
-            try:
-                sourceParts = source.split('|')
-                sourceDateParts = sourceParts[3].split('-')
-                sourcePagesParts = sourceParts[4].replace('p. ', '').split('-')
-                journal = {
-                    'day': sourceDateParts[2].strip(),
-                    'end_page': sourcePagesParts[1].strip(),
-                    'issue': sourceParts[1].replace('° ', '').strip(),
-                    'month': sourceDateParts[1].strip(),
-                    'start_page': sourcePagesParts[0].strip(),
-                    'title': sourceParts[0].strip(),
-                    'volume': sourceParts[2].strip(),
-                    'year': sourceDateParts[0].strip(),
-                }
-            except IndexError:
-                pass
+        try:
+            cairn_journal = CairnJournal(self.record)
+            journal = cairn_journal.as_dict()
+        except TypeError:
+            logger.error("No journal data", exc_info=True)
 
         return journal
 
@@ -309,7 +301,7 @@ class OAIArticle_Openedition(OAIArticle_Base):
         issn = list(set(issn))
         if len(issn) > 0:
             journal["journal_ids"] = [
-                {"id": val, "type": "eissn"} for val in issn]
+                {"id": val, "type": JATS_SPRINGER_JOURNALTYPE.epub.value} for val in issn]
 
         return journal
 

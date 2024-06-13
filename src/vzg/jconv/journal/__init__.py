@@ -3,7 +3,7 @@
 
 ##############################################################################
 #
-# Copyright (c) 2023 Verbundzentrale des GBV.
+# Copyright (c) 2023-2024 Verbundzentrale des GBV.
 # All Rights Reserved.
 #
 ##############################################################################
@@ -211,3 +211,110 @@ class JatsJournal:
 
     def xpath(self, expression):
         return self.article.dom.xpath(expression, namespaces=NAMESPACES)
+
+
+@implementer(IJournal)
+class CairnJournal:
+
+    def __init__(self, record: any) -> None:
+        self.record = record
+
+        if len(self.record.getField('source')) < 1:
+            raise TypeError("Unknown source")
+
+        self.source = self.record.getField('source')[0]
+        self.source_parts = [val.strip() for val in self.source.split("|")]
+
+        self.source_type = len(self.source_parts)
+        if self.source_type not in (4, 5, 6):
+            msg = f"Unknown source: {self.source}"
+            raise TypeError(msg)
+
+    def as_dict(self):
+        """Dict representation"""
+        jdict = {}
+
+        match self.source_type:
+            case 4:
+                jdict = self.__as_dict_4__()
+            case 5:
+                jdict = self.__as_dict_5__()
+            case 6:
+                jdict = self.__as_dict_6__()
+
+        return jdict
+
+    def __as_dict_4__(self) -> dict:
+        sourceDateParts = self.source_parts[2].split('-')
+        sourcePagesParts = self.source_parts[3].replace('p. ', '').split('-')
+        journal = {
+            'day': sourceDateParts[2].strip(),
+            'end_page': sourcePagesParts[1].strip(),
+            'issue': self.source_parts[1].replace('° ', '').strip(),
+            "journal_ids": self.journal_ids,
+            'month': sourceDateParts[1].strip(),
+            'start_page': sourcePagesParts[0].strip(),
+            'title': self.jtitle,
+            'year': self.jyear,
+        }
+
+        return journal
+
+    def __as_dict_5__(self) -> dict:
+        journal = {}
+        try:
+            sourceDateParts = self.source_parts[2].split('-')
+            sourcePagesParts = self.source_parts[3].replace(
+                'p. ', '').split('-')
+            journal = {
+                'day': sourceDateParts[2].strip(),
+                'end_page': sourcePagesParts[1].strip(),
+                'issue': self.source_parts[1].replace('° ', '').strip(),
+                "journal_ids": self.journal_ids,
+                'month': sourceDateParts[1].strip(),
+                'start_page': sourcePagesParts[0].strip(),
+                'title': self.jtitle,
+                'year': self.jyear,
+            }
+        except Exception:
+            raise TypeError
+
+        return journal
+
+    def __as_dict_6__(self) -> dict:
+        sourceDateParts = self.source_parts[3].split('-')
+        sourcePagesParts = self.source_parts[4].replace('p. ', '').split('-')
+        journal = {
+            'day': sourceDateParts[2].strip(),
+            'end_page': sourcePagesParts[1].strip(),
+            'issue': self.source_parts[1].replace('° ', '').strip(),
+            "journal_ids": self.journal_ids,
+            'month': sourceDateParts[1].strip(),
+            'start_page': sourcePagesParts[0].strip(),
+            'title': self.jtitle,
+            'volume': self.source_parts[2].strip(),
+            'year': self.jyear,
+        }
+
+        return journal
+
+    @property
+    def journal_ids(self) -> list:
+        return [{"id": self.source_parts[-1], "type": JATS_SPRINGER_JOURNALTYPE.epub.value}]
+
+    @property
+    def jtitle(self) -> str:
+        return self.source_parts[0]
+
+    @property
+    def jyear(self) -> str:
+        jyear = ""
+
+        if self.source_type == 4:
+            sourceDateParts = self.source_parts[2].split('-')
+        elif self.source_type == 6:
+            sourceDateParts = self.source_parts[3].split('-')
+
+        jyear = sourceDateParts[0]
+
+        return jyear
