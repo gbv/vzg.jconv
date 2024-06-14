@@ -163,3 +163,9 @@ OAI_DC_HEADER_XPATHS = {
     "setspec": '//oai:header/oai:setSpec/text()',
     "deleted": "//oai:record/@status = 'deleted'"
 }
+
+CAIRN_REGEX = {
+    "issn": r"^(?P<issn>.\d+-\d+)$",
+    "publish_date": r"^(?P<year>.\d*)-(?P<month>.\d*)-(?P<day>.\d*)$",
+    "pages": r"^p\.\s*(?P<start>.\d*)-(?P<end>.\d*)$"
+}

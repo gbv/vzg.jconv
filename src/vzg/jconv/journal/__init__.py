@@ -11,6 +11,7 @@
 
 # Imports
 import logging
+import re
 from zope.interface import implementer
 from vzg.jconv.interfaces import IJournal
 from vzg.jconv.gapi import NAMESPACES
@@ -18,6 +19,7 @@ from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 from vzg.jconv.gapi import PUBTYPE_SOURCES
 from vzg.jconv.gapi import JATS_SPRINGER_JOURNALTYPE
 from vzg.jconv.gapi import JATS_XPATHS
+from vzg.jconv.gapi import CAIRN_REGEX
 from vzg.jconv.utils.date import JatsDate
 from vzg.jconv.utils import get_pubtype_suffix
 from lxml import etree
@@ -230,77 +232,66 @@ class CairnJournal:
             msg = f"Unknown source: {self.source}"
             raise TypeError(msg)
 
+        (self.issn, self.start_page, self.end_page,
+         self.volume) = (None, None, None, None)
+        (self.pdate_day, self.pdate_month, self.pdate_year) = (None, None, None)
+
+        self.__parse_parts__()
+
+    def __parse_parts__(self) -> None:
+        parts = self.source_parts[2:]
+
+        if match := re.match(CAIRN_REGEX["issn"], self.source_parts[-1]):
+            self.issn = match.group("issn")
+            parts = self.source_parts[2:-1]
+
+        print(self.source_parts)
+        for value in reversed(parts):
+            print(value)
+            match = re.match(CAIRN_REGEX["pages"], value)
+            if self.start_page is None and match:
+                self.start_page = match.group("start")
+                self.end_page = match.group("end")
+
+            match = re.match(CAIRN_REGEX["publish_date"], value)
+            if self.pdate_day is None and match:
+                self.pdate_day = match.group("day")
+                self.pdate_month = match.group("month")
+                self.pdate_year = match.group("year")
+
+        if self.source_type == 6:
+            self.volume = self.source_parts[2]
+
     def as_dict(self):
         """Dict representation"""
-        jdict = {}
+        jdict = {
+            'day': self.pdate_day,
+            'end_page': self.end_page,
+            'issue': self.issue,
+            "journal_ids": self.journal_ids,
+            'month': self.pdate_month,
+            'start_page': self.start_page,
+            'title': self.jtitle,
+            'year': self.jyear,
+        }
 
-        match self.source_type:
-            case 4:
-                jdict = self.__as_dict_4__()
-            case 5:
-                jdict = self.__as_dict_5__()
-            case 6:
-                jdict = self.__as_dict_6__()
+        if self.volume is not None:
+            jdict["volume"] = self.volume
+
+        if self.issn is not None:
+            jdict["journal_ids"] = self.journal_ids
 
         return jdict
 
-    def __as_dict_4__(self) -> dict:
-        sourceDateParts = self.source_parts[2].split('-')
-        sourcePagesParts = self.source_parts[3].replace('p. ', '').split('-')
-        journal = {
-            'day': sourceDateParts[2].strip(),
-            'end_page': sourcePagesParts[1].strip(),
-            'issue': self.source_parts[1].replace('° ', '').strip(),
-            "journal_ids": self.journal_ids,
-            'month': sourceDateParts[1].strip(),
-            'start_page': sourcePagesParts[0].strip(),
-            'title': self.jtitle,
-            'year': self.jyear,
-        }
-
-        return journal
-
-    def __as_dict_5__(self) -> dict:
-        journal = {}
-        try:
-            sourceDateParts = self.source_parts[2].split('-')
-            sourcePagesParts = self.source_parts[3].replace(
-                'p. ', '').split('-')
-            journal = {
-                'day': sourceDateParts[2].strip(),
-                'end_page': sourcePagesParts[1].strip(),
-                'issue': self.source_parts[1].replace('° ', '').strip(),
-                "journal_ids": self.journal_ids,
-                'month': sourceDateParts[1].strip(),
-                'start_page': sourcePagesParts[0].strip(),
-                'title': self.jtitle,
-                'year': self.jyear,
-            }
-        except Exception:
-            raise TypeError
-
-        return journal
-
-    def __as_dict_6__(self) -> dict:
-        sourceDateParts = self.source_parts[3].split('-')
-        sourcePagesParts = self.source_parts[4].replace('p. ', '').split('-')
-        journal = {
-            'day': sourceDateParts[2].strip(),
-            'end_page': sourcePagesParts[1].strip(),
-            'issue': self.source_parts[1].replace('° ', '').strip(),
-            "journal_ids": self.journal_ids,
-            'month': sourceDateParts[1].strip(),
-            'start_page': sourcePagesParts[0].strip(),
-            'title': self.jtitle,
-            'volume': self.source_parts[2].strip(),
-            'year': self.jyear,
-        }
-
-        return journal
+    @property
+    def issue(self) -> str:
+        return self.source_parts[1]
 
     @property
     def journal_ids(self) -> list:
-        return [{"id": self.source_parts[-1], "type": JATS_SPRINGER_JOURNALTYPE.epub.value}]
+        if self.issn is not None:
+            return [{"id": self.issn, "type": JATS_SPRINGER_JOURNALTYPE.epub.value}]
+        return []
 
     @property
     def jtitle(self) -> str:
@@ -308,13 +299,4 @@ class CairnJournal:
 
     @property
     def jyear(self) -> str:
-        jyear = ""
-
-        if self.source_type == 4:
-            sourceDateParts = self.source_parts[2].split('-')
-        elif self.source_type == 6:
-            sourceDateParts = self.source_parts[3].split('-')
-
-        jyear = sourceDateParts[0]
-
-        return jyear
+        return self.pdate_year
