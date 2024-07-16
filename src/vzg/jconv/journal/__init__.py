@@ -228,7 +228,7 @@ class CairnJournal:
         self.source_parts = [val.strip() for val in self.source.split("|")]
 
         self.source_type = len(self.source_parts)
-        if self.source_type not in (4, 5, 6):
+        if self.source_type != 6:
             msg = f"Unknown source: {self.source}"
             raise TypeError(msg)
 
@@ -245,9 +245,7 @@ class CairnJournal:
             self.issn = match.group("issn")
             parts = self.source_parts[2:-1]
 
-        print(self.source_parts)
         for value in reversed(parts):
-            print(value)
             match = re.match(CAIRN_REGEX["pages"], value)
             if self.start_page is None and match:
                 self.start_page = match.group("start")
