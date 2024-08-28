@@ -244,7 +244,8 @@ class OAIArticle_Cairn(OAIArticle_Base):
             "persons": self.persons,
             "primary_id": self.primary_id,
             "subject_terms": self.subject_terms,
-            "title": self.title
+            "title": self.title,
+            "urls": self.urls
         }
 
         return jdict
@@ -272,6 +273,33 @@ class OAIArticle_Cairn(OAIArticle_Base):
             lang_code.append(language)
 
         return lang_code
+
+    @property
+    def urls(self) -> list:
+        urls = []
+        identifier = None
+        access_info = None
+
+        for value in self.record.getField("identifier"):
+            identifier = value
+            break
+
+        for value in self.record.getField("access_rights"):
+            if value == "free access":
+                access_info = "LF"
+                break
+            elif value == "restricted access":
+                access_info = "ZZ"
+                break
+
+        if access_info is not None and identifier is not None:
+            urls.append({
+                "access_info": access_info,
+                "scope": "34",
+                "url": identifier
+            })
+
+        return urls
 
 
 @implementer(IArticle)

@@ -24,6 +24,7 @@ NAMESPACES = {
     "oai": "http://www.openarchives.org/OAI/2.0/",
     "oai_dc": "http://www.openarchives.org/OAI/2.0/oai_dc/",
     'dc': 'http://purl.org/dc/elements/1.1/',
+    'dcterms': 'http://purl.org/dc/terms/',
     "xml": "http://www.w3.org/XML/1998/namespace",
     "xlink": "http://www.w3.org/1999/xlink",
     "mml": "http://www.w3.org/1998/Math/MathML",
@@ -154,7 +155,8 @@ OAI_DC_RECORD_XPATHS = {
     'language':    ('textList', '//oai_dc:dc/dc:language/text()'),
     'relation':    ('textList', '//oai_dc:dc/dc:relation/text()'),
     'coverage':    ('textList', '//oai_dc:dc/dc:coverage/text()'),
-    'rights':      ('textList', '//oai_dc:dc/dc:rights/text()')
+    'rights':      ('textList', '//oai_dc:dc/dc:rights/text()'),
+    'access_rights':      ('textList', '//oai_dc:dc/dcterms:accessRights/text()')
 }
 
 OAI_DC_HEADER_XPATHS = {
