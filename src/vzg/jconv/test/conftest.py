@@ -3,7 +3,7 @@
 
 ##############################################################################
 #
-# Copyright (c) 2023 Verbundzentrale des GBV.
+# Copyright (c) 2023-2025 Verbundzentrale des GBV.
 # All Rights Reserved.
 #
 ##############################################################################
@@ -12,11 +12,8 @@
 import pytest
 import inspect
 
-__author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
-__docformat__ = "plaintext"
 
-
-@pytest.mark.trylast
+@pytest.hookimpl(trylast=True)
 def pytest_configure(config):
     terminal_reporter = config.pluginmanager.getplugin("terminalreporter")
     config.pluginmanager.register(
