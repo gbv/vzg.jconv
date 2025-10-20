@@ -3,22 +3,21 @@
 
 ##############################################################################
 #
-# Copyright (c) 2020-2023 Verbundzentrale des GBV.
+# Copyright (c) 2020-2025 Verbundzentrale des GBV.
 # All Rights Reserved.
 #
 ##############################################################################
 """
 
-import datetime
 import logging
 import uuid
 from pathlib import Path
 import zipfile
 import tempfile
+from vzg.jconv.archives.oai import MarcArchive
 from vzg.jconv.archives.springer import ArchiveSpringer
 from vzg.jconv.archives.oai import ArchiveOAIDC
 from vzg.jconv.converter.jats import JatsConverter
-from vzg.jconv.converter.oai import OAIDCConverter
 from vzg.jconv.gapi import OAI_ARTICLES_TYPES
 
 
@@ -121,8 +120,49 @@ def jats(options):
             del jconv
 
 
-def oai(options):
+def marc(options):
     """Use a OAI responses as source"""
+    logger = logging.getLogger(__name__)
+
+    deliverysignature = uuid.uuid4()
+    opath = Path(options.outdir).absolute()
+
+    archive = MarcArchive(
+        Path(options.zippath[0]),
+        validate=options.validate,
+    )
+    num_res = float(archive.num_files)
+
+    for i, conv in enumerate(archive.converters):
+        xpercent = i / num_res * 100
+        msg = f"{xpercent:.2f}%"
+        logger.info(msg)
+
+        conv.run()
+
+        anum = len(conv.articles)
+        msg = f"\t{anum} article(s)"
+        logger.info(msg)
+
+        if options.dry_run is False:
+            for j, article in enumerate(conv.articles):
+                aname = f"{deliverysignature}-{i}-{j}.json"
+                logger.info(aname)
+                jpath = opath / aname
+
+                with jpath.open("w") as jfh:
+                    jfh.write(article.json)
+
+        if options.stop and conv.validation_failed:
+            msg = "Validation problem"
+            logger.info(msg)
+            break
+
+        del conv
+
+
+def oai(options):
+    """Use a MARC responses as source"""
     logger = logging.getLogger(__name__)
 
     deliverysignature = uuid.uuid4()
@@ -173,6 +213,53 @@ def run():
     parser = ArgumentParser(description=description)
 
     subparsers = parser.add_subparsers()
+
+    parser_marc = subparsers.add_parser("marc", help="Convert MARC responses")
+
+    parser_marc.add_argument(
+        "-n",
+        "--dry-run",
+        dest="dry_run",
+        action="store_true",
+        default=False,
+        help="Do nothing",
+    )
+
+    parser_marc.add_argument(
+        "-o",
+        "--output-directory",
+        dest="outdir",
+        metavar="Output directory",
+        type=str,
+        default="output",
+        help="Directory of JSON files",
+    )
+
+    parser_marc.add_argument(
+        "--stop",
+        dest="stop",
+        action="store_true",
+        default=False,
+        help="Stop if JSON Schema Validation fails",
+    )
+
+    parser_marc.add_argument(
+        "--validate",
+        dest="validate",
+        action="store_true",
+        default=False,
+        help="JSON Schema Validation",
+    )
+
+    parser_marc.add_argument(
+        dest="zippath",
+        metavar="Zipfile",
+        type=str,
+        nargs=1,
+        help="Zipfile with MARC records",
+    )
+
+    parser_marc.set_defaults(func=marc)
 
     parser_oai = subparsers.add_parser("oai", help="Convert OAI responses")
 
