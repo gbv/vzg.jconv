@@ -3,7 +3,7 @@
 
 ##############################################################################
 #
-# Copyright (c) 2023 Verbundzentrale des GBV.
+# Copyright (c) 2023-2025 Verbundzentrale des GBV.
 # All Rights Reserved.
 #
 ##############################################################################
@@ -11,6 +11,8 @@
 
 import datetime
 import logging
+import pymarc
+import tempfile
 import zipfile
 from dataclasses import dataclass, field
 from lxml import etree
@@ -20,15 +22,12 @@ from zope.interface import implementer
 from vzg.jconv.gapi import NAMESPACES, OAI_DC_RECORD_XPATHS
 from vzg.jconv.gapi import OAI_DC_HEADER_XPATHS, OAI_ARTICLES_TYPES
 from vzg.jconv.interfaces import IArchive
+from vzg.jconv.converter.MarcXmlConverter import MarcConverter
 from vzg.jconv.converter.oai import OAIDCConverter
-
-__author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
-__docformat__ = 'plaintext'
 
 
 @dataclass
 class Header:
-
     record: etree._Element
     identifier: str = ""
     datestamp: datetime.datetime = None
@@ -55,8 +54,7 @@ class Header:
         if key not in OAI_DC_HEADER_XPATHS:
             return None
 
-        val = self.record.xpath(
-            OAI_DC_HEADER_XPATHS[key], namespaces=NAMESPACES)
+        val = self.record.xpath(OAI_DC_HEADER_XPATHS[key], namespaces=NAMESPACES)
 
         if isinstance(val, list) and single_node:
             if len(val) > 0:
@@ -91,7 +89,6 @@ class Metadata:
 
 @implementer(IArchive)
 class ArchiveOAIDC:
-
     def __init__(self, archivepath: Path, converter_kwargs: dict = {}) -> None:
         self.archivepath = archivepath
         self.converter_kwargs = converter_kwargs
@@ -111,21 +108,26 @@ class ArchiveOAIDC:
                     header = Header(dom)
                     record = Metadata(dom, OAI_DC_RECORD_XPATHS)
 
-                    if self.converter_kwargs.get('article_type') == OAI_ARTICLES_TYPES.openedition:
-                        if 'article' not in record.getField('type'):
+                    if (
+                        self.converter_kwargs.get("article_type")
+                        == OAI_ARTICLES_TYPES.openedition
+                    ):
+                        if "article" not in record.getField("type"):
                             continue
-                    oiaconv = OAIDCConverter(header,
-                                             record,
-                                             **self.converter_kwargs)
-                except (etree.Error,
-                        KeyError,
-                        ValueError,
-                        IndexError,
-                        OSError,
-                        TypeError):
-
-                    _path = self.archivepath.as_posix() if isinstance(
-                        self.archivepath, Path) else self.archivepath
+                    oiaconv = OAIDCConverter(header, record, **self.converter_kwargs)
+                except (
+                    etree.Error,
+                    KeyError,
+                    ValueError,
+                    IndexError,
+                    OSError,
+                    TypeError,
+                ):
+                    _path = (
+                        self.archivepath.as_posix()
+                        if isinstance(self.archivepath, Path)
+                        else self.archivepath
+                    )
                     msg = "Konvertierungsproblem in "
                     msg += f"{_path}-> {zinfo.filename}"
                     logger.error(msg, exc_info=True)
@@ -133,6 +135,72 @@ class ArchiveOAIDC:
                     continue
 
                 yield oiaconv
+
+    @property
+    def num_files(self) -> int:
+        """How many files are in the archive"""
+        with zipfile.ZipFile(self.archivepath, "r") as zfh:
+            num = len(zfh.namelist())
+
+        return num
+
+
+@implementer(IArchive)
+class MarcArchive:
+    """Archive of MARCXML files"""
+
+    def __init__(self, archivepath: Path, **converter_kwargs) -> None:
+        self.archivepath = archivepath
+        self.converter_kwargs = converter_kwargs
+
+        if not self.archivepath.exists():
+            raise FileNotFoundError(f"Archive {self.archivepath} does not exist")
+
+        if not self.archivepath.is_file():
+            raise IsADirectoryError(f"{self.archivepath} is not a file")
+
+        if not self.archivepath.suffix == ".zip":
+            raise ValueError("Archive must be a .zip file")
+        if not self.archivepath.stat().st_size > 0:
+            raise ValueError("Archive must not be empty")
+
+        if not self.archivepath.is_absolute():
+            self.archivepath = Path.cwd() / self.archivepath
+
+        self.converter_kwargs.setdefault("validate", True)
+
+    @property
+    def converters(self) -> Generator[MarcConverter, None, None]:
+        logger = logging.getLogger(__name__)
+
+        with zipfile.ZipFile(self.archivepath, "r") as zfh:
+            for i, zinfo in enumerate(zfh.infolist()):
+                msg = f"Bearbeite {zinfo.filename} ({i})"
+                logger.debug(msg)
+
+                with tempfile.NamedTemporaryFile("w+b") as tmpfh:
+                    tmpfh.write(zfh.read(zinfo))
+                    tmpfh.flush()
+
+                    try:
+                        reader = pymarc.parse_xml_to_array(tmpfh.name)
+                        record = reader[0] if reader else None
+                        myconv = MarcConverter(record, **self.converter_kwargs)
+                    except (
+                        pymarc.PymarcException,
+                        KeyError,
+                        ValueError,
+                        IndexError,
+                        OSError,
+                        TypeError,
+                    ):
+                        msg = "Konvertierungsproblem in "
+                        msg += f"{self.archivepath.as_posix()} -> {zinfo.filename}"
+                        logger.error(msg, exc_info=True)
+
+                        continue
+
+                    yield myconv
 
     @property
     def num_files(self) -> int:
