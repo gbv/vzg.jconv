@@ -4,7 +4,7 @@ authors = [
     { name="Marc-J. Tegethoff", email="tegethoff@gbv.de" },
 ]
 description = "Create articles (articelformat) from various sources"
-version = "1.5.0"
+version = "1.6.0"
 readme = "README.md"
 keywords = ["VZG", "Python", "JSON", "XML", "JAST"]
 license = { text = "GNU Affero General Public License v3" }
