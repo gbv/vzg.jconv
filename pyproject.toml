@@ -1,0 +1,39 @@
+[project]
+name = "vzg.jconv"
+authors = [
+    { name="Marc-J. Tegethoff", email="tegethoff@gbv.de" },
+]
+description = "Create articles (articelformat) from various sources"
+version = "1.5.0"
+readme = "README.md"
+keywords = ["VZG", "Python", "JSON", "XML", "JAST"]
+license = { text = "GNU Affero General Public License v3" }
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+]
+dependencies = [
+    "jsonschema",
+    "lxml",
+    "setuptools",
+    "wheel",
+    "zope.interface",
+]
+requires-python = ">=3.12"
+
+[project.urls]
+"PyPI" = "https://pypi.python.org/pypi/vzg.jconv"
+"Source" = "https://github.com/gbv/vzg.jconv"
+"Tracker" = "https://github.com/gbv/vzg.jconv/issues"
+
+[build-system]
+requires = ["setuptools>=72.0"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+simple-conv = "vzg.jconv.tools.simple_conv:run"
