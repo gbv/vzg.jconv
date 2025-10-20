@@ -9,16 +9,12 @@
 ##############################################################################
 """
 
-# Imports
 import unittest
 from vzg.jconv.converter.jats import JatsArticle
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE, PUBTYPE_SOURCES
 from pathlib import Path
 import json
 from lxml import etree
-
-__author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
-__docformat__ = "plaintext"
 
 
 class EPubArticle(unittest.TestCase):

@@ -20,13 +20,8 @@ from vzg.jconv.interfaces import IArchive
 from vzg.jconv.converter.jats import JatsConverter
 
 
-__author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
-__docformat__ = 'plaintext'
-
-
 @implementer(IArchive)
 class ArchiveSpringer:
-
     def __init__(self, archivepath: Path, converter_kwargs: dict = {}) -> None:
         self.archivepath = archivepath
         self.converter_kwargs = converter_kwargs
@@ -49,14 +44,15 @@ class ArchiveSpringer:
 
                     try:
                         jatspath = Path(tmpfh.name)
-                        jconv = JatsConverter(
-                            jatspath, **self.converter_kwargs)
-                    except (etree.Error,
-                            KeyError,
-                            ValueError,
-                            IndexError,
-                            OSError,
-                            TypeError):
+                        jconv = JatsConverter(jatspath, **self.converter_kwargs)
+                    except (
+                        etree.Error,
+                        KeyError,
+                        ValueError,
+                        IndexError,
+                        OSError,
+                        TypeError,
+                    ):
                         msg = "Konvertierungsproblem in "
                         msg += f"{self.archivepath.as_posix()} -> {zinfo.filename}"
                         logger.error(msg, exc_info=True)

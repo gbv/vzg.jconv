@@ -9,7 +9,6 @@
 ##############################################################################
 """
 
-# Imports
 from pathlib import Path
 from zope.interface import implementer
 from vzg.jconv.interfaces import IArticle
@@ -30,9 +29,6 @@ from lxml import etree
 import logging
 import json
 import jsonschema
-
-__author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
-__docformat__ = "plaintext"
 
 
 @implementer(IArticle)
@@ -146,8 +142,7 @@ class JatsArticle:
                 pubtype=self.pubtype.name
             )
         else:
-            expression = JATS_XPATHS["pub-date"].format(
-                pubtype=self.pubtype.value)
+            expression = JATS_XPATHS["pub-date"].format(pubtype=self.pubtype.value)
 
         node = self.xpath(expression)
 
@@ -357,8 +352,9 @@ class JatsArticle:
                 subject["terms"].append(node)
 
             if (
-                (len(subject["lang_code"]) > 0) and (
-                    len(subject["scheme"]) > 0) and (len(subject["terms"]) > 0)
+                (len(subject["lang_code"]) > 0)
+                and (len(subject["scheme"]) > 0)
+                and (len(subject["terms"]) > 0)
             ):
                 subjects.append(subject)
 
@@ -456,12 +452,14 @@ class JatsConverter:
     []
     """
 
-    def __init__(self,
-                 jatspath: Path,
-                 iso639: ISO_639 = None,
-                 publisher: str = None,
-                 validate: bool = False,
-                 name: str = ""):
+    def __init__(
+        self,
+        jatspath: Path,
+        iso639: ISO_639 = None,
+        publisher: str = None,
+        validate: bool = False,
+        name: str = "",
+    ):
         self.jatspath = jatspath
         self.articles = []
         self.name = name
@@ -507,15 +505,13 @@ class JatsConverter:
         for entry in JATS_SPRINGER_PUBTYPE:
             if self.pubtype_source == PUBTYPE_SOURCES.springer:
                 logger.debug("new pub")
-                expression = JATS_XPATHS["pub-date-format"].format(
-                    pubtype=entry.name)
+                expression = JATS_XPATHS["pub-date-format"].format(pubtype=entry.name)
             elif self.pubtype_source == PUBTYPE_SOURCES.degruyter:
                 expression = JATS_XPATHS["pub-date-pubtype-val"].format(
                     pubtype=entry.value
                 )
             else:
-                expression = JATS_XPATHS["pub-date"].format(
-                    pubtype=entry.value)
+                expression = JATS_XPATHS["pub-date"].format(pubtype=entry.value)
 
             nodes = self.dom.xpath(expression, namespaces=NAMESPACES)
 
@@ -540,8 +536,7 @@ class JatsConverter:
 
             if self.validate:
                 try:
-                    jsonschema.validate(
-                        instance=article.jdict, schema=JSON_SCHEMA)
+                    jsonschema.validate(instance=article.jdict, schema=JSON_SCHEMA)
                     self.articles.append(article)
                 except jsonschema.ValidationError as Exc:
                     logger.info(Exc, exc_info=False)

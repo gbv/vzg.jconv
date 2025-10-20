@@ -8,9 +8,3 @@
 #
 ##############################################################################
 """
-
-# Imports
-
-
-__author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
-__docformat__ = 'plaintext'

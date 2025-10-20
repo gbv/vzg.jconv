@@ -9,7 +9,6 @@
 ##############################################################################
 """
 
-# Imports
 import unittest
 import logging
 from vzg.jconv.person import Person
@@ -18,8 +17,6 @@ from pathlib import Path
 import json
 from lxml import etree
 
-__author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
-__docformat__ = "plaintext"
 
 logger = logging.getLogger(__name__)
 

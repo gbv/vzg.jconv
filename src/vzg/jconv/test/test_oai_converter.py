@@ -17,15 +17,12 @@ from vzg.jconv.archives.oai import ArchiveOAIDC
 from vzg.jconv.converter.oai import OAIDCConverter
 from vzg.jconv.interfaces import IConverter
 
-__author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
-__docformat__ = 'plaintext'
-
 
 class TestOAIDC(unittest.TestCase):
-
     def setUp(self) -> None:
-        self.baseurl = Path(
-            "data/tests/oai/2024-01-23_10-59-52-001.zip").absolute().as_posix()
+        self.baseurl = (
+            Path("data/tests/oai/2024-01-23_10-59-52-001.zip").absolute().as_posix()
+        )
 
     def test_converter(self):
         """"""

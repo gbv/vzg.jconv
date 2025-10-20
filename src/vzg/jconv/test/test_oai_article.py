@@ -18,9 +18,6 @@ from vzg.jconv.converter.oai import OAIArticle_Openedition, OAIArticle_Cairn
 from vzg.jconv.interfaces import IArticle
 from vzg.jconv.gapi import OAI_ARTICLES_TYPES
 
-__author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
-__docformat__ = "plaintext"
-
 
 class Cairn(unittest.TestCase):
     def setUp(self) -> None:

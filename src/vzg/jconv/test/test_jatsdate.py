@@ -15,8 +15,6 @@ import unittest
 from lxml import etree
 from vzg.jconv.utils.date import JatsDate
 
-__author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
-__docformat__ = "plaintext"
 
 XML_DATE_NUMBER = b"""
 <date>

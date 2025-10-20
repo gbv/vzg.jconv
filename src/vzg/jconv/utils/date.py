@@ -9,13 +9,9 @@
 ##############################################################################
 """
 
-# Imports
 import calendar
 import datetime
 from lxml import etree
-
-__author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
-__docformat__ = "plaintext"
 
 
 class JatsDate:

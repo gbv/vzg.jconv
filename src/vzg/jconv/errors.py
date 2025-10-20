@@ -8,11 +8,6 @@
 ##############################################################################
 """
 
-# Imports
-
-__author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
-__docformat__ = 'plaintext'
-
 
 class NoPublisherError(Exception):
     """No publisher could be identified"""

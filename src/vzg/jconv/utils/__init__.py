@@ -9,16 +9,12 @@
 ##############################################################################
 """
 
-# Imports
 from lxml import etree
 import re
 from vzg.jconv.gapi import NAMESPACES
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE
 from vzg.jconv.gapi import JATS_PUBTYPE_SUFFIX
 
-
-__author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
-__docformat__ = "plaintext"
 
 # TeX formular
 TEXREX = re.compile(r"(\${1,2}.*\${1,2})")

@@ -9,7 +9,6 @@
 ##############################################################################
 """
 
-# Imports
 import datetime
 import logging
 import uuid
@@ -21,10 +20,6 @@ from vzg.jconv.archives.oai import ArchiveOAIDC
 from vzg.jconv.converter.jats import JatsConverter
 from vzg.jconv.converter.oai import OAIDCConverter
 from vzg.jconv.gapi import OAI_ARTICLES_TYPES
-
-
-__author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
-__docformat__ = "plaintext"
 
 
 def fromarchive(options):
@@ -133,13 +128,12 @@ def oai(options):
     deliverysignature = uuid.uuid4()
     opath = Path(options.outdir).absolute()
 
-    atype = getattr(OAI_ARTICLES_TYPES,
-                    options.publisher,
-                    OAI_ARTICLES_TYPES.unknown)
+    atype = getattr(OAI_ARTICLES_TYPES, options.publisher, OAI_ARTICLES_TYPES.unknown)
 
-    archive = ArchiveOAIDC(options.zippath[0],
-                           converter_kwargs={"article_type": atype,
-                                             "validate": options.validate})
+    archive = ArchiveOAIDC(
+        options.zippath[0],
+        converter_kwargs={"article_type": atype, "validate": options.validate},
+    )
     num_res = float(archive.num_files)
 
     for i, conv in enumerate(archive.converters):
@@ -180,9 +174,7 @@ def run():
 
     subparsers = parser.add_subparsers()
 
-    parser_oai = subparsers.add_parser(
-        "oai", help="Convert OAI responses"
-    )
+    parser_oai = subparsers.add_parser("oai", help="Convert OAI responses")
 
     parser_oai.add_argument(
         "-n",

@@ -19,8 +19,6 @@ from vzg.jconv.converter.jats import JatsArticle
 from vzg.jconv.gapi import JATS_SPRINGER_PUBTYPE, PUBTYPE_SOURCES
 from vzg.jconv.utils.date import JatsDate
 
-__author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
-__docformat__ = "plaintext"
 
 logger = logging.getLogger(__name__)
 

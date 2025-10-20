@@ -15,9 +15,6 @@ from vzg.jconv.gapi import JATS_SPRINGER_AUTHORTYPE
 from vzg.jconv.gapi import PERSON_ID_TYPES
 from vzg.jconv.utils import flatten_line
 
-__author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
-__docformat__ = "plaintext"
-
 
 class Person:
     def __init__(self, node: etree._Element) -> None:

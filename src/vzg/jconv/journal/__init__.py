@@ -9,7 +9,6 @@
 ##############################################################################
 """
 
-# Imports
 import logging
 import re
 from zope.interface import implementer
@@ -23,9 +22,6 @@ from vzg.jconv.gapi import CAIRN_REGEX
 from vzg.jconv.utils.date import JatsDate
 from vzg.jconv.utils import get_pubtype_suffix
 from lxml import etree
-
-__author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
-__docformat__ = "plaintext"
 
 
 @implementer(IJournal)
@@ -73,15 +69,13 @@ class JatsJournal:
 
         for pubtype in JATS_SPRINGER_PUBTYPE:
             if self.article.pubtype_source == PUBTYPE_SOURCES.springer:
-                expression = JATS_XPATHS["pub-date-format"].format(
-                    pubtype=pubtype.name)
+                expression = JATS_XPATHS["pub-date-format"].format(pubtype=pubtype.name)
             elif self.article.pubtype_source == PUBTYPE_SOURCES.degruyter:
                 expression = JATS_XPATHS["pub-date-pubtype-val"].format(
                     pubtype=pubtype.value
                 )
             else:
-                expression = JATS_XPATHS["pub-date"].format(
-                    pubtype=pubtype.value)
+                expression = JATS_XPATHS["pub-date"].format(pubtype=pubtype.value)
 
             node = self.xpath(expression)
 
@@ -103,8 +97,7 @@ class JatsJournal:
             "basic": [JATS_XPATHS["journal-id"].format(journaltype="publisher-id")],
             "doi": [JATS_XPATHS["journal-id"].format(journaltype="doi")],
             self.article.pubtype.value: [
-                JATS_XPATHS["journal-issn"].format(
-                    pubtype=self.article.pubtype.value),
+                JATS_XPATHS["journal-issn"].format(pubtype=self.article.pubtype.value),
                 JATS_XPATHS["journal-issn-pformat"].format(
                     pubtype=self.article.pubtype.name
                 ),
@@ -153,8 +146,7 @@ class JatsJournal:
                     jid["type"] = "springer"
                     if self.article.pubtype_source == PUBTYPE_SOURCES.degruyter:
                         jid["type"] = "degruyter"
-                        jid["id"] += get_pubtype_suffix(
-                            self.article.pubtype.value)
+                        jid["id"] += get_pubtype_suffix(self.article.pubtype.value)
 
                 if jid["type"] in JATS_SPRINGER_JOURNALTYPE.__members__:
                     jid["type"] = JATS_SPRINGER_JOURNALTYPE[jid["type"]].value
@@ -217,14 +209,13 @@ class JatsJournal:
 
 @implementer(IJournal)
 class CairnJournal:
-
     def __init__(self, record: any) -> None:
         self.record = record
 
-        if len(self.record.getField('source')) < 1:
+        if len(self.record.getField("source")) < 1:
             raise TypeError("Unknown source")
 
-        self.source = self.record.getField('source')[0]
+        self.source = self.record.getField("source")[0]
         self.source_parts = [val.strip() for val in self.source.split("|")]
 
         self.source_type = len(self.source_parts)
@@ -232,8 +223,12 @@ class CairnJournal:
             msg = f"Unknown source: {self.source}"
             raise TypeError(msg)
 
-        (self.issn, self.start_page, self.end_page,
-         self.volume) = (None, None, None, None)
+        (self.issn, self.start_page, self.end_page, self.volume) = (
+            None,
+            None,
+            None,
+            None,
+        )
         (self.pdate_day, self.pdate_month, self.pdate_year) = (None, None, None)
 
         self.__parse_parts__()
@@ -263,14 +258,14 @@ class CairnJournal:
     def as_dict(self):
         """Dict representation"""
         jdict = {
-            'day': self.pdate_day,
-            'end_page': self.end_page,
-            'issue': self.issue,
+            "day": self.pdate_day,
+            "end_page": self.end_page,
+            "issue": self.issue,
             "journal_ids": self.journal_ids,
-            'month': self.pdate_month,
-            'start_page': self.start_page,
-            'title': self.jtitle,
-            'year': self.jyear,
+            "month": self.pdate_month,
+            "start_page": self.start_page,
+            "title": self.jtitle,
+            "year": self.jyear,
         }
 
         if self.volume is not None:

@@ -9,12 +9,8 @@
 ##############################################################################
 """
 
-# Imports
 import json
 from pathlib import Path
-
-__author__ = """Marc-J. Tegethoff <marc.tegethoff@gbv.de>"""
-__docformat__ = 'plaintext'
 
 
 class ISO_639:
@@ -35,15 +31,13 @@ class ISO_639:
     """
 
     def __init__(self):
-        """"Initalize ISO data"""
+        """ "Initalize ISO data"""
         cfld = Path(__file__).parent.absolute()
         self.cdatapath = cfld / "language-codes.json"
 
         with open(self.cdatapath) as fh:
             self.jdata = json.load(fh)
 
-        self.i1toi2 = {lentry["alpha2"]: lentry["alpha3-b"]
-                       for lentry in self.jdata}
+        self.i1toi2 = {lentry["alpha2"]: lentry["alpha3-b"] for lentry in self.jdata}
 
-        self.i2toi1 = {lentry["alpha3-b"]: lentry["alpha2"]
-                       for lentry in self.jdata}
+        self.i2toi1 = {lentry["alpha3-b"]: lentry["alpha2"] for lentry in self.jdata}
