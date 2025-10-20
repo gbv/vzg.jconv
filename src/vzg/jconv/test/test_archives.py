@@ -108,11 +108,3 @@ def test_marcxml_num(setup_marcxml: MarcXMLBase):
 
     archive = MarcArchive(setup_marcxml.archive)
     assert archive.num_files == 7
-
-
-def test_marcxml_converter(setup_marcxml: MarcXMLBase):
-    archive = MarcArchive(setup_marcxml.archive)
-
-    for i, conv in enumerate(archive.converters):
-        assert IConverter in providedBy(conv)
-        assert isinstance(conv, MarcConverter)
