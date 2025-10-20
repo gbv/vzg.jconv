@@ -21,6 +21,7 @@ dependencies = [
     "jsonschema",
     "lxml",
     "setuptools",
+    "pymarc",
     "wheel",
     "zope.interface",
 ]
