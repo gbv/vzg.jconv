@@ -3,30 +3,43 @@
 
 ##############################################################################
 #
-# Copyright (c) 2023 Verbundzentrale des GBV.
+# Copyright (c) 2023-2025 Verbundzentrale des GBV.
 # All Rights Reserved.
 #
 ##############################################################################
 """
 
-import datetime
+import pytest
 import unittest
 import zipfile
+from dataclasses import dataclass
 from pathlib import Path
 from zope.interface import providedBy
 from vzg.jconv.archives.oai import ArchiveOAIDC
+from vzg.jconv.archives.oai import MarcArchive
 from vzg.jconv.archives.springer import ArchiveSpringer
 from vzg.jconv.converter.jats import JatsConverter
+from vzg.jconv.converter.MarcXmlConverter import MarcConverter
 from vzg.jconv.converter.oai import OAIDCConverter
 from vzg.jconv.interfaces import IConverter
 
 
-__author__ = """Marc-J. Tegethoff <tegethoff@gbv.de>"""
-__docformat__ = 'plaintext'
+@dataclass
+class MarcXMLBase:
+    archive: Path
+
+
+@pytest.fixture
+def setup_marcxml() -> MarcXMLBase:
+    """"""
+    marcxml_base = MarcXMLBase(
+        archive=Path("data/tests/ssoar/2025-09-02_12-30-47-001.zip")
+    )
+
+    return marcxml_base
 
 
 class TestSpringer(unittest.TestCase):
-
     def setUp(self) -> None:
         self.archive = Path("data/tests/springer/test_archive.zip")
 
@@ -46,6 +59,7 @@ class TestSpringer(unittest.TestCase):
 
     def test_file(self):
         """"""
+
         def t1(evt):
             archive = ArchiveSpringer(Path("dsdssdsd"))
             archive.num_files
@@ -69,10 +83,10 @@ class TestSpringer(unittest.TestCase):
 
 
 class TestOAIDC(unittest.TestCase):
-
     def setUp(self) -> None:
-        self.baseurl = Path(
-            "data/tests/oai/2024-01-23_10-59-52-001.zip").absolute().as_posix()
+        self.baseurl = (
+            Path("data/tests/oai/2024-01-23_10-59-52-001.zip").absolute().as_posix()
+        )
 
     def test_num(self):
         """"""
@@ -87,3 +101,18 @@ class TestOAIDC(unittest.TestCase):
         for i, conv in enumerate(archive.converters):
             self.assertIn(IConverter, providedBy(conv), "IConverter")
             self.assertIsInstance(conv, OAIDCConverter, "Konverter")
+
+
+def test_marcxml_num(setup_marcxml: MarcXMLBase):
+    assert isinstance(setup_marcxml, MarcXMLBase)
+
+    archive = MarcArchive(setup_marcxml.archive)
+    assert archive.num_files == 7
+
+
+def test_marcxml_converter(setup_marcxml: MarcXMLBase):
+    archive = MarcArchive(setup_marcxml.archive)
+
+    for i, conv in enumerate(archive.converters):
+        assert IConverter in providedBy(conv)
+        assert isinstance(conv, MarcConverter)
