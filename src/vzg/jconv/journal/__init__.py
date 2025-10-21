@@ -22,6 +22,7 @@ from vzg.jconv.gapi import CAIRN_REGEX
 from vzg.jconv.utils.date import JatsDate
 from vzg.jconv.utils import get_pubtype_suffix
 from lxml import etree
+from urllib.parse import urlparse
 
 
 @implementer(IJournal)
@@ -293,3 +294,64 @@ class CairnJournal:
     @property
     def jyear(self) -> str:
         return self.pdate_year
+
+
+@implementer(IJournal)
+class MarcJournal:
+    def __init__(self, record: any) -> None:
+        self.record = record
+
+    def as_dict(self) -> dict:
+        journal = {}
+
+        journal["year"] = self.record.pubyear
+        # journal["volume"] = self.record.get("260", "").get_subfields("b")[0] if self.record.get("260") else ""
+        # journal["issue"] = self.record.get("260", "").get_subfields("c")[0] if self.record.get("260") else ""
+
+        if self.record.get("020"):
+            journal["isbn"] = self.record.get("020", "").get_subfields("a")[0]
+
+        if issn := self.issn:
+            journal["issn"] = issn
+
+        journal["title"] = self.jtitle
+        # if not journal["title"]:
+        #     journal["title"] = self.record.get("245", "").get_subfields("a")[0] if self.record.get("245") else ""
+
+        return journal
+
+    @property
+    def issn(self) -> str | None:
+        doi = None
+
+        for field in self.record.get_fields("024"):
+            sub_field = field.get_subfields("2")
+
+            if len(sub_field) == 0:
+                continue
+
+            if field.get_subfields("2")[0] == "doi":
+                doi = field.get_subfields("a")[0]
+
+        if doi is None:
+            return None
+
+        doi_id = urlparse(doi).path.split("/")[-1]
+
+        issn = "".join(doi_id.split(".")[0:-1])
+        issn_pattern = re.compile(r"^\d{4}-\d{3}[\dX]$")
+
+        if not issn_pattern.match(issn):
+            return None
+
+        return issn
+
+    @property
+    def jtitle(self) -> str:
+        for field in self.record.get_fields("490", "500"):
+            journal_title = field.get_subfields("a")[0].strip()
+            if journal_title.startswith("In: "):
+                title_parts = journal_title[4:].split(";")
+                journal_title = title_parts[0].strip()
+
+        return journal_title
