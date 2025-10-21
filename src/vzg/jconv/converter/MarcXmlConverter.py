@@ -12,6 +12,7 @@
 from vzg.jconv.gapi import JSON_SCHEMA
 from vzg.jconv.interfaces import IArticle
 from vzg.jconv.interfaces import IConverter
+from vzg.jconv.journal import MarcJournal
 from vzg.jconv.langcode import ISO_639
 from zope.interface import implementer
 import json
@@ -73,13 +74,8 @@ class MarcArticle:
 
         for field in self.record.get_fields("100", "700"):
             try:
-                persons.append(
-                    {
-                        "fullname": field.get_subfields("a")[
-                            0
-                        ]  # TODO: consider subfield 4 for "aut"
-                    }
-                )
+                if field.get_subfields("4")[0] == "aut":
+                    persons.append({"fullname": field.get_subfields("a")[0]})
             except IndexError:
                 pass
 
@@ -118,18 +114,9 @@ class MarcArticle:
 
     @property
     def journal(self) -> dict:
-        journal = {}
+        journal = MarcJournal(self.record)
 
-        for field in self.record.get_fields("490", "500"):
-            journal["title"] = field.get_subfields("a")[0]
-        journal["year"] = self.record.pubyear
-        # journal["volume"] = self.record.get("260", "").get_subfields("b")[0] if self.record.get("260") else ""
-        # journal["issue"] = self.record.get("260", "").get_subfields("c")[0] if self.record.get("260") else ""
-        # journal["issn"] = self.record.get("022", "").get_subfields("a")[0] if self.record.get("022") else ""
-        # if not journal["title"]:
-        #     journal["title"] = self.record.get("245", "").get_subfields("a")[0] if self.record.get("245") else ""
-
-        return journal
+        return journal.as_dict()
 
     @property
     def abstracts(self) -> str:
